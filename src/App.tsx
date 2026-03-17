@@ -32,12 +32,13 @@ const C = {
 interface Batch {
   id: number; name: string; teluguName: string; fee: number;
   Icon: React.ElementType; schedule: string; time: string;
-  mode: string; tag: string; danceIcon: React.ReactNode;
+  mode: string; tag: string; teacher?: string; danceIcon: React.ReactNode;
 }
 interface BatchApi {
   id: number;
   batch_name: string;
   type: string;
+  trainer?: string;
   days: string;
   start_time: string;
   end_time: string;
@@ -265,6 +266,7 @@ function mapBatchFromApi(batch: BatchApi): Batch {
     time: `${formatTimeLabel(batch.start_time)}${batch.end_time ? ` – ${formatTimeLabel(batch.end_time)}` : ""}`.trim(),
     mode: titleCase(batch.mode || "ONLINE"),
     tag: titleCase(batch.type || "POPULAR"),
+    teacher: String(batch.trainer || "").trim(),
     danceIcon: visuals.danceIcon,
   };
 }
@@ -295,7 +297,7 @@ function NavBar({ active, set }:{active:Tab;set:(t:Tab)=>void}) {
           </div>
           <div>
             <div style={{fontFamily:"'DM Serif Display',serif",fontSize:18,fontWeight:400,color:C.maroon,letterSpacing:"0.12em",lineHeight:1}}>ANANDAMAYI</div>
-            <div style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:12,color:C.maroonLight,lineHeight:1.15}}>ఆనందమయి నృత్యాలయం</div>
+            <div style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:12,color:C.maroonLight,lineHeight:1.15}}>ఆనందమయి నృత్యాల</div>
             <div style={{fontSize:8,color:C.bronzeLight,letterSpacing:"0.42em",textTransform:"uppercase",fontWeight:700,marginTop:2}}>Dance Academy</div>
           </div>
         </div>
@@ -353,7 +355,7 @@ function HeroSection({ setTab, batchCount }:{setTab:(t:Tab)=>void;batchCount:num
 
         {/* Telugu title */}
         <div style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:"clamp(1.2rem,3.2vw,2rem)",color:C.maroonLight,marginBottom:4,letterSpacing:"0.02em"}}>
-          ఆనందమయి నృత్య విద్యాలయం
+          ఆనందమయి నృత్యాల
         </div>
 
         {/* English */}
@@ -437,6 +439,9 @@ function BatchCard({b,selected,onSelect}:{b:Batch;selected:boolean;onSelect:(x:B
           </div>
           <div style={{display:"flex",alignItems:"center",gap:8,fontSize:12,color:C.bronze,background:`${C.maroon}05`,border:`1px solid ${C.maroon}10`,borderRadius:8,padding:"9px 10px"}}>
             <Clock size={11} style={{color:C.maroonLight}}/>{b.time}
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:8,fontSize:12,color:C.bronze,background:`${C.maroon}05`,border:`1px solid ${C.maroon}10`,borderRadius:8,padding:"9px 10px"}}>
+            <Users size={11} style={{color:C.maroonLight}}/>{b.teacher || "Teacher will be announced"}
           </div>
         </div>
         <div style={{display:"flex",alignItems:"end",justifyContent:"space-between",gap:10}}>
@@ -560,7 +565,7 @@ function ChatBot({
     setMessages([]);
     setStep("welcome");
     setAgreed(false);
-    timers.push(setTimeout(()=>add("🙏 నమస్తే! Anandamayi Dance Academy కి స్వాగతం!\nWelcome! I'm here to guide you through registration."),300));
+    timers.push(setTimeout(()=>add("🙏 నమస్తే! Anandamayi Nrutyala కి స్వాగతం!\nWelcome! I'm here to guide you through registration."),300));
     timers.push(setTimeout(()=>{
       add("మీకు నచ్చిన బ్యాచ్ ఎంచుకోండి · Please choose your batch:","bot","batch_picker");
       setStep("batch_select");
@@ -1003,7 +1008,7 @@ function PaymentSection({ initialSession, batches }:{ initialSession:StudentSess
 // ── Contact ───────────────────────────────────────────────────────────────────
 function ContactSection() {
   const items=[
-    {Icon:MapPin,title:"Location · చిరునామా",detail:"Anandamayi Dance Academy\nHyderabad, Telangana",te:"హైదరాబాద్, తెలంగాణ"},
+    {Icon:MapPin,title:"Location · చిరునామా",detail:"Anandamayi Nrutyala\nHyderabad, Telangana",te:"హైదరాబాద్, తెలంగాణ"},
     {Icon:Phone,title:"Phone · ఫోన్",detail:"+91 98765 43210",te:"సోమ–శని · 9AM–7PM"},
     {Icon:Mail,title:"Email · ఇమెయిల్",detail:"info@anandamayi.in\nadmissions@anandamayi.in",te:""},
     {Icon:MessageCircle,title:"DM · సందేశం",detail:"@anandamayi_dance\nInstagram · WhatsApp",te:""},
@@ -1040,8 +1045,8 @@ function ContactSection() {
             <NatarajaLogo size={60} color={C.maroon}/>
             <KuchipudiIcon size={50} color={C.maroon}/>
           </div>
-          <p style={{fontFamily:"'DM Serif Display',serif",color:C.maroon,fontSize:20,marginBottom:4}}>Anandamayi Dance Academy</p>
-          <p style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:16,color:C.maroonLight,marginBottom:8}}>ఆనందమయి నృత్య విద్యాలయం</p>
+          <p style={{fontFamily:"'DM Serif Display',serif",color:C.maroon,fontSize:20,marginBottom:4}}>Anandamayi Nrutyala</p>
+          <p style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:16,color:C.maroonLight,marginBottom:8}}>ఆనందమయి నృత్యాల</p>
           <OrnamentDivider/>
           <p style={{fontStyle:"italic",color:C.bronze,fontSize:13,fontFamily:"'Manrope','Segoe UI',sans-serif",marginTop:8}}>Where every step is a prayer, every movement a devotion.</p>
           <p style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:12,color:C.maroonLight,marginTop:4}}>ప్రతి అడుగూ ప్రార్థన, ప్రతి కదలికా భక్తి.</p>
@@ -1115,7 +1120,7 @@ export default function App() {
           <span style={{fontSize:9,letterSpacing:"0.4em",color:`${C.maroon}55`,textTransform:"uppercase",fontFamily:"'DM Serif Display',serif"}}>Anandamayi · ఆనందమయి · Bharatanatyam · Kuchipudi</span>
           <KuchipudiIcon size={18} color={C.maroon}/>
         </div>
-        <p style={{fontSize:10,color:`${C.maroon}40`}}>© {new Date().getFullYear()} Anandamayi Dance Academy · All rights reserved</p>
+        <p style={{fontSize:10,color:`${C.maroon}40`}}>© {new Date().getFullYear()} Anandamayi Nrutyala · All rights reserved</p>
       </footer>
     </div>
   );

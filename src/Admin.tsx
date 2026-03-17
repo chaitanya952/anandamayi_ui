@@ -39,6 +39,7 @@ interface BatchSlot {
   id: number;
   batch_name: string;
   type: string;
+  trainer: string;
   days: string;
   start_time: string;
   end_time: string;
@@ -155,7 +156,7 @@ function LoginPage({ onLogin }: { onLogin:(token:string)=>void }) {
             <Flower2 size={26} style={{ color:C.maroon }}/>
           </div>
           <h1 style={{ fontFamily:"'DM Serif Display',serif", fontSize:26, color:C.deep, marginBottom:2 }}>Admin Panel</h1>
-          <p style={{ fontFamily:"'Noto Serif Telugu',serif", fontSize:13, color:C.maroonLight }}>ఆనందమయి నృత్యాలయం</p>
+          <p style={{ fontFamily:"'Noto Serif Telugu',serif", fontSize:13, color:C.maroonLight }}>ఆనందమయి నృత్యాల</p>
         </div>
         <Card style={{ background:C.white, border:`1.5px solid ${C.maroon}18`, borderRadius:6, boxShadow:`0 8px 32px ${C.maroon}12` }}>
           <CardContent style={{ padding:28 }}>
@@ -651,7 +652,7 @@ function BatchSlotsPage() {
   const [data, setData]       = useState<BatchSlot[]>([]);
   const [editing, setEditing] = useState<BatchSlot|null>(null);
   const [adding, setAdding]   = useState(false);
-  const blankSlot: BatchSlot  = { id:0, batch_name:"", type:"POPULAR", days:"", start_time:"18:00", end_time:"19:00", fee:0, mode:"ONLINE" };
+  const blankSlot: BatchSlot  = { id:0, batch_name:"", type:"POPULAR", trainer:"", days:"", start_time:"18:00", end_time:"19:00", fee:0, mode:"ONLINE" };
   const totalBatches = data.length;
   const onlineCount = data.filter((b) => b.mode === "ONLINE").length;
   const hybridCount = data.filter((b) => b.mode === "HYBRID").length;
@@ -726,6 +727,7 @@ function BatchSlotsPage() {
                     </div>
                     <CardTitle style={{ fontFamily:"'DM Serif Display',serif", fontSize:18, color:C.deep }}>{b.batch_name}</CardTitle>
                     <p style={{ fontSize:12, color:C.gray500, marginTop:4, lineHeight:1.5 }}>{b.days}</p>
+                    <p style={{ fontSize:12, color:C.maroon, marginTop:6, fontWeight:600 }}>{b.trainer ? `Teacher: ${b.trainer}` : "Teacher not assigned"}</p>
                   </div>
                   <div style={{ display:"flex", gap:6 }}>
                     <button onClick={()=>{setEditing({...b});setAdding(false);}} style={{ width:32, height:32, borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:C.gray700 }}><Edit2 size={13}/></button>
@@ -748,6 +750,10 @@ function BatchSlotsPage() {
                     </div>
                   ))}
                 </div>
+                <div style={{ marginTop:10, background:`${C.maroon}05`, border:`1px solid ${C.maroon}12`, borderRadius:8, padding:"10px 12px" }}>
+                  <p style={{ fontSize:10, letterSpacing:"0.14em", textTransform:"uppercase", color:C.gray500, marginBottom:4 }}>Teacher</p>
+                  <p style={{ fontSize:13, color:C.deep, fontWeight:600 }}>{b.trainer || "Not assigned"}</p>
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -756,7 +762,7 @@ function BatchSlotsPage() {
 
       {editForm&&(
         <Modal title={adding?"Add New Batch":`Edit — ${editing?.batch_name}`} onClose={()=>{setEditing(null);setAdding(false);}}>
-          {[["Batch Name","batch_name","text"],["Type","type","text"],["Days","days","text"]].map(([label,key])=>(
+          {[["Batch Name","batch_name","text"],["Type","type","text"],["Teacher / Slot Owner","trainer","text"],["Days","days","text"]].map(([label,key])=>(
             <FormField key={key} label={label} value={(editForm as unknown as Record<string,string>)[key]||""} onChange={v=>setEditing(e=>({...(e||blankSlot), [key]:v} as BatchSlot))}/>
           ))}
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
