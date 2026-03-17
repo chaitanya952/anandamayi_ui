@@ -188,7 +188,7 @@ const Corner = ({ flip=false }:{flip?:boolean}) => (
 );
 
 // ── Data ──────────────────────────────────────────────────────────────────────
-const FALLBACK_BATCHES: Batch[] = [
+export const FALLBACK_BATCHES: Batch[] = [
   { id:1, name:"Online Weekend", teluguName:"ఆన్‌లైన్ వారాంతం", fee:2500, Icon:Monitor,   schedule:"Sat & Sun",     time:"10:00 AM – 12:00 PM", mode:"Online",        tag:"Popular",       danceIcon:<BharatanatyamIcon size={30}/> },
   { id:2, name:"Online Weekday", teluguName:"ఆన్‌లైన్ వారదినం",  fee:2500, Icon:Globe,     schedule:"Mon – Fri",     time:"7:00 PM – 8:30 PM",   mode:"Online",        tag:"Flexible",      danceIcon:<KuchipudiIcon size={30}/> },
   { id:3, name:"Traya Abroad",   teluguName:"త్రయ విదేశం",        fee:5000, Icon:Plane,     schedule:"Flexible",      time:"By Schedule",         mode:"Hybrid",        tag:"Premium",       danceIcon:<BharatanatyamIcon size={30}/> },
@@ -1056,7 +1056,7 @@ export default function App() {
   const [activeTab,setActiveTab]=useState<Tab>("Home");
   const [regBatch,setRegBatch]=useState<Batch|null>(null);
   const [studentSession,setStudentSession]=useState<StudentSession|null>(null);
-  const [batches,setBatches]=useState<Batch[]>(FALLBACK_BATCHES);
+  const [batches,setBatches]=useState<Batch[]>([]);
 
   useEffect(()=>{
     let live = true;
@@ -1064,11 +1064,9 @@ export default function App() {
       try {
         const data = await apiGet<BatchApi[]>("batches");
         if (!live) return;
-        if (Array.isArray(data) && data.length) {
-          setBatches(data.map(mapBatchFromApi));
-        }
+        setBatches(Array.isArray(data) ? data.map(mapBatchFromApi) : []);
       } catch {
-        if (live) setBatches(FALLBACK_BATCHES);
+        if (live) setBatches([]);
       }
     };
 
