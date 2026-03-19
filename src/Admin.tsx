@@ -10,7 +10,7 @@ import {
   Plus, Edit2, Trash2, ChevronLeft, ChevronRight,
   ChevronUp, ChevronDown, X, Check, Eye, EyeOff,
   AlertCircle, CheckCircle2, Clock, TrendingUp,
-  Menu, Flower2, RefreshCw, Save
+  Menu, Flower2, RefreshCw, Save, QrCode
 } from "lucide-react";
 
 // ── Color palette (matches main site) ────────────────────────────────────────
@@ -55,7 +55,16 @@ interface Booking {
   id: number; studentName: string; course: string; batch: string;
   bookingDate: string; status: "Confirmed"|"Cancelled"|"Waitlisted";
 }
-type AdminPage = "dashboard"|"admissions"|"bookings"|"payments"|"batches"|"import"|"settings";
+interface QrCodeRecord {
+  id: number;
+  label: string;
+  upi_id: string;
+  batch_name: string;
+  amount: number | null;
+  active: boolean;
+  audience: "all" | "new" | "existing";
+}
+type AdminPage = "dashboard"|"admissions"|"bookings"|"payments"|"batches"|"qr"|"import"|"settings";
 
 // ── API helpers ───────────────────────────────────────────────────────────────
 async function apiFetch(path: string, opts?: RequestInit) {
@@ -191,6 +200,7 @@ const NAV_ITEMS: { page: AdminPage; label: string; te: string; Icon: React.Eleme
   { page:"bookings",   label:"Bookings",        te:"బుకింగ్‌లు",       Icon:Calendar        },
   { page:"payments",   label:"Payments",        te:"చెల్లింపులు",       Icon:CreditCard      },
   { page:"batches",    label:"Batch Slots",     te:"బ్యాచ్ స్లాట్లు",  Icon:BookOpen        },
+  { page:"qr",         label:"QR Payments",     te:"క్యు ఆర్ చెల్లింపులు", Icon:QrCode       },
   { page:"import",     label:"Import Students", te:"విద్యార్థులు దిగుమతి", Icon:Upload       },
   { page:"settings",   label:"Settings",        te:"సెట్టింగులు",       Icon:Settings        },
 ];
@@ -315,17 +325,16 @@ function Dashboard() {
           <table style={{ width:"100%", borderCollapse:"collapse" }}>
             <thead>
               <tr style={{ background:C.gray50 }}>
-                {["Name","Course","Batch","Date","Status"].map(h=>(
+                {["Name","Batch","Date","Status"].map(h=>(
                   <th key={h} style={{ padding:"10px 16px", textAlign:"left", fontSize:11, letterSpacing:"0.1em", textTransform:"uppercase", color:C.gray500, borderBottom:`1px solid ${C.gray200}` }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {recent.length===0&&<tr><td colSpan={5} style={{textAlign:"center",padding:24,color:C.gray500,fontSize:13}}>No data yet</td></tr>}
+              {recent.length===0&&<tr><td colSpan={4} style={{textAlign:"center",padding:24,color:C.gray500,fontSize:13}}>No data yet</td></tr>}
               {recent.map((r,i)=>(
                 <tr key={r.id} style={{ borderBottom:`1px solid ${C.gray100}`, background:i%2===0?C.white:C.gray50 }}>
                   <td style={{ padding:"10px 16px", fontSize:13, color:C.deep, fontWeight:500 }}>{r.name}</td>
-                  <td style={{ padding:"10px 16px", fontSize:13, color:C.gray700 }}>{r.course}</td>
                   <td style={{ padding:"10px 16px", fontSize:13, color:C.gray700 }}>{r.batch}</td>
                   <td style={{ padding:"10px 16px", fontSize:12, color:C.gray500 }}>{r.admissionDate}</td>
                   <td style={{ padding:"10px 16px" }}><StatusBadge status={r.paymentStatus}/></td>
@@ -407,15 +416,15 @@ function AdmissionsPage() {
             <table style={{ width:"100%", borderCollapse:"collapse" }}>
               <thead>
                 <tr>
-                  {[["name","Name"],["phone","Phone"],["email","Email"],["course","Course"],["batch","Batch"],["admissionDate","Date"],["paymentStatus","Status"]].map(([k,l])=>(
+                  {[["name","Name"],["phone","Phone"],["email","Email"],["batch","Batch"],["admissionDate","Date"],["paymentStatus","Status"]].map(([k,l])=>(
                     <TableHeader key={k} label={l} sortKey={k} sortBy={sortBy} sortDir={sortDir} onSort={handleSort}/>
                   ))}
                   <th style={{ padding:"10px 14px", background:C.gray50, borderBottom:`1px solid ${C.gray200}`, fontSize:11, letterSpacing:"0.1em", textTransform:"uppercase", color:C.gray500 }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {loading && <tr><td colSpan={8} style={{textAlign:"center",padding:32,color:C.gray500}}><RefreshCw size={18} style={{animation:"spin 1s linear infinite"}}/></td></tr>}
-                {!loading && data.length===0 && <tr><td colSpan={8} style={{textAlign:"center",padding:32,color:C.gray500,fontSize:13}}>No records found</td></tr>}
+                {loading && <tr><td colSpan={7} style={{textAlign:"center",padding:32,color:C.gray500}}><RefreshCw size={18} style={{animation:"spin 1s linear infinite"}}/></td></tr>}
+                {!loading && data.length===0 && <tr><td colSpan={7} style={{textAlign:"center",padding:32,color:C.gray500,fontSize:13}}>No records found</td></tr>}
                 {data.map((row,i)=>(
                   <tr key={row.id} style={{ borderBottom:`1px solid ${C.gray100}`, background:i%2===0?C.white:C.gray50 }}
                     onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background=`${C.maroon}05`}
@@ -423,7 +432,6 @@ function AdmissionsPage() {
                     <td style={{ padding:"10px 14px", fontSize:13, color:C.deep, fontWeight:500, whiteSpace:"nowrap" }}>{row.name}</td>
                     <td style={{ padding:"10px 14px", fontSize:13, color:C.gray700 }}>{row.phone}</td>
                     <td style={{ padding:"10px 14px", fontSize:13, color:C.gray700 }}>{row.email||"—"}</td>
-                    <td style={{ padding:"10px 14px", fontSize:13, color:C.gray700 }}>{row.course}</td>
                     <td style={{ padding:"10px 14px", fontSize:13, color:C.gray700 }}>{row.batch}</td>
                     <td style={{ padding:"10px 14px", fontSize:12, color:C.gray500, whiteSpace:"nowrap" }}>{row.admissionDate}</td>
                     <td style={{ padding:"10px 14px" }}><StatusBadge status={row.paymentStatus}/></td>
@@ -459,7 +467,6 @@ function AdmissionsPage() {
           <FormField label="Student Name" value={editing.name} onChange={v=>setEditing(e=>e?{...e,name:v}:e)}/>
           <FormField label="Phone" value={editing.phone} onChange={v=>setEditing(e=>e?{...e,phone:v}:e)}/>
           <FormField label="Email" value={editing.email||""} onChange={v=>setEditing(e=>e?{...e,email:v}:e)}/>
-          <FormField label="Course" value={editing.course} onChange={v=>setEditing(e=>e?{...e,course:v}:e)}/>
           <FormField label="Batch" value={editing.batch} onChange={v=>setEditing(e=>e?{...e,batch:v}:e)}/>
           <FormField label="Payment Status" value={editing.paymentStatus} onChange={v=>setEditing(e=>e?{...e,paymentStatus:v as Student["paymentStatus"]}:e)} options={["Paid","Pending","Partial"]}/>
           <div style={{ display:"flex", gap:10, marginTop:8 }}>
@@ -784,6 +791,183 @@ function BatchSlotsPage() {
 }
 
 // ── IMPORT ────────────────────────────────────────────────────────────────────
+function QrPaymentsPage() {
+  const [data, setData] = useState<QrCodeRecord[]>([]);
+  const [batches, setBatches] = useState<BatchSlot[]>([]);
+  const [editing, setEditing] = useState<QrCodeRecord|null>(null);
+  const [adding, setAdding] = useState(false);
+  const blankQr: QrCodeRecord = { id: 0, label: "", upi_id: "", batch_name: "All", amount: null, active: false, audience: "all" };
+
+  const load = useCallback(() => {
+    apiFetch("/admin/qrcodes")
+      .then((d) => setData(Array.isArray(d) ? d.map((row) => ({ ...row, audience: row.audience || "all" })) : []))
+      .catch(() => {});
+    apiFetch("/batches")
+      .then((d) => setBatches(Array.isArray(d) ? d : []))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const activeCount = data.filter((row) => row.active).length;
+  const batchOptions = ["All", ...Array.from(new Set(batches.map((batch) => batch.batch_name).filter(Boolean)))];
+  const editForm = editing || (adding ? blankQr : null);
+
+  const handleSave = async (record: QrCodeRecord) => {
+    if (!record.label.trim() || !record.upi_id.trim()) {
+      alert("Label and UPI ID are required.");
+      return;
+    }
+
+    const payload = {
+      label: record.label.trim(),
+      upi_id: record.upi_id.trim(),
+      batch_name: record.batch_name || "All",
+      amount: record.amount === null || Number.isNaN(Number(record.amount)) ? null : Number(record.amount),
+      active: record.active,
+      audience: record.audience || "all",
+    };
+
+    try {
+      if (record.id === 0) await apiFetch("/admin/qrcodes", { method: "POST", body: JSON.stringify(payload) });
+      else await apiFetch(`/admin/qrcodes/${record.id}`, { method: "PUT", body: JSON.stringify(payload) });
+      setEditing(null);
+      setAdding(false);
+      load();
+    } catch {
+      alert("Unable to save QR payment settings.");
+    }
+  };
+
+  const handleActivate = async (record: QrCodeRecord) => {
+    try {
+      await apiFetch(`/admin/qrcodes/${record.id}`, { method: "PUT", body: JSON.stringify({ active: true }) });
+      load();
+    } catch {
+      alert("Unable to activate this QR.");
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("Delete this QR payment option?")) return;
+    try {
+      await apiFetch(`/admin/qrcodes/${id}`, { method: "DELETE" });
+      load();
+    } catch {
+      alert("Unable to delete this QR.");
+    }
+  };
+
+  return (
+    <div style={{ display:"flex", flexDirection:"column", flex:1, overflow:"hidden" }}>
+      <TopBar
+        title="QR Payments"
+        subtitle="Manage UPI IDs and batch-wise QR payment links"
+        actions={<Button onClick={()=>{setAdding(true);setEditing(null);}} style={{ height:34, background:`linear-gradient(135deg,${C.maroon},${C.maroonMid})`, color:C.cream, border:"none", borderRadius:3, fontSize:12, cursor:"pointer", display:"flex", alignItems:"center", gap:5 }}><Plus size={13}/>Add QR</Button>}
+      />
+      <div style={{ flex:1, overflowY:"auto", padding:"16px 24px" }}>
+        <div style={{ background:`linear-gradient(135deg, ${C.white}, ${C.parchment})`, border:`1px solid ${C.maroon}20`, borderRadius:8, padding:"18px 20px", marginBottom:18, boxShadow:`0 10px 24px ${C.maroon}10` }}>
+          <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:18, flexWrap:"wrap" }}>
+            <div style={{ maxWidth:560 }}>
+              <p style={{ fontSize:10, letterSpacing:"0.32em", color:C.bronze, textTransform:"uppercase", marginBottom:8 }}>UPI Control Center</p>
+              <h3 style={{ fontFamily:"'DM Serif Display',serif", fontSize:24, color:C.deep, marginBottom:6 }}>Assign QR Payments By Batch</h3>
+              <p style={{ fontSize:13, color:C.gray700, lineHeight:1.7 }}>
+                Create one fallback QR for all batches or set specific UPI IDs and amounts for individual batches. Students will see the active QR automatically on the payment page.
+              </p>
+            </div>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(2, minmax(120px, 1fr))", gap:10, minWidth:"min(100%, 320px)" }}>
+              {[
+                { label:"QR Entries", value:String(data.length) },
+                { label:"Active QR", value:String(activeCount) },
+                { label:"Batch Rules", value:String(data.filter((row) => row.batch_name !== "All").length) },
+                { label:"Fallback Rules", value:String(data.filter((row) => row.batch_name === "All").length) },
+              ].map((item) => (
+                <div key={item.label} style={{ background:`${C.maroon}08`, border:`1px solid ${C.maroon}18`, borderRadius:6, padding:"12px 14px" }}>
+                  <p style={{ fontSize:10, letterSpacing:"0.18em", textTransform:"uppercase", color:C.gray500, marginBottom:4 }}>{item.label}</p>
+                  <p style={{ fontFamily:"'DM Serif Display',serif", fontSize:22, color:C.maroon }}>{item.value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ background:`${C.maroon}08`, border:`1px solid ${C.maroon}20`, borderRadius:6, padding:"10px 14px", marginBottom:16, display:"flex", alignItems:"center", gap:8, fontSize:12, color:C.maroon }}>
+          <AlertCircle size={14}/>Set batch to `All` for a fallback UPI ID. Mark a QR as active to make it live for students.
+        </div>
+
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(320px,1fr))", gap:18 }}>
+          {data.map((row) => (
+            <Card key={row.id} style={{ background:`linear-gradient(180deg, ${C.white}, ${C.gray50})`, border:`1px solid ${row.active ? C.maroon : C.gray200}`, borderRadius:10, boxShadow:`0 14px 28px ${C.maroon}10`, overflow:"hidden" }}>
+              <div style={{ height:5, background: row.active ? `linear-gradient(90deg, ${C.maroon}, ${C.bronzeLight})` : `linear-gradient(90deg, ${C.gray200}, ${C.gray100})` }} />
+              <CardHeader style={{ padding:"18px 18px 10px" }}>
+                <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:12 }}>
+                  <div>
+                    <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap", marginBottom:8 }}>
+                      <span style={{ padding:"4px 8px", borderRadius:999, background: row.active ? `${C.maroon}10` : C.white, border:`1px solid ${row.active ? C.maroon + "18" : C.gray200}`, fontSize:10, color:row.active ? C.maroon : C.gray700, letterSpacing:"0.16em", textTransform:"uppercase" }}>
+                        {row.active ? "Active" : "Inactive"}
+                      </span>
+                      <span style={{ padding:"4px 8px", borderRadius:999, background:C.white, border:`1px solid ${C.gray200}`, fontSize:10, color:C.gray700, letterSpacing:"0.16em", textTransform:"uppercase" }}>
+                        {row.batch_name || "All"}
+                      </span>
+                    </div>
+                    <CardTitle style={{ fontFamily:"'DM Serif Display',serif", fontSize:18, color:C.deep }}>{row.label}</CardTitle>
+                    <p style={{ fontSize:12, color:C.gray500, marginTop:6, lineHeight:1.5 }}>{row.upi_id}</p>
+                  </div>
+                  <div style={{ display:"flex", gap:6 }}>
+                    {!row.active && <button onClick={()=>handleActivate(row)} style={{ width:32, height:32, borderRadius:8, border:`1px solid ${C.maroon}20`, background:`${C.maroon}08`, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:C.maroon }}><Check size={13}/></button>}
+                    <button onClick={()=>{setEditing({...row});setAdding(false);}} style={{ width:32, height:32, borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:C.gray700 }}><Edit2 size={13}/></button>
+                    <button onClick={()=>handleDelete(row.id)} style={{ width:32, height:32, borderRadius:8, border:"1px solid #f4cfcf", background:"#fff8f8", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:C.error }}><Trash2 size={13}/></button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent style={{ padding:"0 18px 18px" }}>
+                <Separator style={{ background:C.gray200, marginBottom:14 }}/>
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(2, 1fr)", gap:10 }}>
+                {[
+                    { label:"Batch", value:row.batch_name || "All" },
+                    { label:"Audience", value:row.audience === "new" ? "New students" : row.audience === "existing" ? "Registered students" : "All students" },
+                    { label:"Amount", value:row.amount ? `Rs. ${Number(row.amount).toLocaleString()}` : "Use batch fee" },
+                    { label:"UPI ID", value:row.upi_id },
+                    { label:"Status", value:row.active ? "Live now" : "Draft" },
+                  ].map((item)=>(
+                    <div key={item.label} style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:8, padding:"10px 12px" }}>
+                      <p style={{ fontSize:10, letterSpacing:"0.14em", textTransform:"uppercase", color:C.gray500, marginBottom:4 }}>{item.label}</p>
+                      <p style={{ fontSize:13, color:C.deep, fontWeight:600, wordBreak:"break-word" }}>{item.value}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {editForm && (
+        <Modal title={adding ? "Add New QR" : `Edit - ${editing?.label}`} onClose={()=>{setEditing(null);setAdding(false);}}>
+          <FormField label="Label" value={editForm.label} onChange={v=>setEditing(e=>({...(e||blankQr), label:v} as QrCodeRecord))}/>
+          <FormField label="UPI ID" value={editForm.upi_id} onChange={v=>setEditing(e=>({...(e||blankQr), upi_id:v} as QrCodeRecord))}/>
+          <FormField label="Batch" value={editForm.batch_name} onChange={v=>setEditing(e=>({...(e||blankQr), batch_name:v} as QrCodeRecord))} options={batchOptions}/>
+          <FormField label="Student Type" value={editForm.audience} onChange={v=>setEditing(e=>({...(e||blankQr), audience:v as QrCodeRecord["audience"]} as QrCodeRecord))} options={["all","new","existing"]}/>
+          <FormField label="Amount (optional)" value={editForm.amount === null ? "" : String(editForm.amount)} onChange={v=>setEditing(e=>({...(e||blankQr), amount:v === "" ? null : Number(v)} as QrCodeRecord))} type="number"/>
+          <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12, padding:"10px 12px", background:C.gray50, border:`1px solid ${C.gray200}`, borderRadius:6 }}>
+            <input
+              id="qr-active"
+              type="checkbox"
+              checked={editForm.active}
+              onChange={e=>setEditing(prev=>({...(prev||blankQr), active:e.target.checked} as QrCodeRecord))}
+            />
+            <Label htmlFor="qr-active" style={{ fontSize:12, color:C.deep }}>Make this QR active immediately</Label>
+          </div>
+          <div style={{ display:"flex", gap:10, marginTop:8 }}>
+            <Button onClick={()=>{setEditing(null);setAdding(false);}} style={{ flex:1, height:38, background:C.white, border:`1px solid ${C.gray200}`, color:C.gray700, borderRadius:3, cursor:"pointer" }}>Cancel</Button>
+            <Button onClick={()=>editForm&&handleSave(editForm)} style={{ flex:1, height:38, background:`linear-gradient(135deg,${C.maroon},${C.maroonMid})`, color:C.cream, border:"none", borderRadius:3, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}><Save size={13}/>Save QR</Button>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
 function ImportPage() {
   const [preview, setPreview]   = useState<Student[]>([]);
   const [errors, setErrors]     = useState<string[]>([]);
@@ -977,6 +1161,7 @@ export default function AdminApp() {
     bookings:   <BookingsPage/>,
     payments:   <PaymentsPage/>,
     batches:    <BatchSlotsPage/>,
+    qr:         <QrPaymentsPage/>,
     import:     <ImportPage/>,
     settings:   <SettingsPage/>,
   };

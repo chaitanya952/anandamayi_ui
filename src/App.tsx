@@ -4,16 +4,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import QRCode from "qrcode";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import {
   Globe, Monitor, Plane, MapPin, Building2, Phone, Mail,
   CheckCircle2, ChevronRight, Clock, Calendar, CreditCard,
-  Users, Award, FileText, AlertCircle, Menu, X,
-  Flower2, Music, BookOpen, Heart, MessageCircle, Loader2, Sparkles
+  Users, FileText, AlertCircle, Menu, X,
+  Flower2, BookOpen, Heart, MessageCircle, Loader2, Sparkles
 } from "lucide-react";
 
-// ── Color Palette (extracted from your logo) ──────────────────────────────────
+// -- Color Palette (extracted from your logo) ----------------------------------
 const C = {
   parchment:   "#F2D9B8",   // warm sandy background
   sandLight:   "#F7EDD8",   // lighter parchment
@@ -28,7 +29,7 @@ const C = {
   deep:        "#3D0A12",   // near-black maroon
 } as const;
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// -- Types ---------------------------------------------------------------------
 interface Batch {
   id: number; name: string; teluguName: string; fee: number;
   Icon: React.ElementType; schedule: string; time: string;
@@ -53,12 +54,22 @@ interface StudentSession {
   phone: string;
   email?: string;
   batch: Batch | null;
+  studentType?: StudentType;
+}
+interface ActiveQrCode {
+  id?: number;
+  label?: string;
+  upi_id?: string;
+  batch_name?: string;
+  amount?: number | string | null;
+  active?: boolean;
+  audience?: "all" | "new" | "existing";
 }
 type Tab = "Home"|"Batches"|"Register"|"Payment"|"Contact";
 type Step = "welcome"|"batch_select"|"guidelines"|"student_type"|"form";
 type StudentType = "new"|"existing";
 
-// ── Custom SVG Dance Icons ────────────────────────────────────────────────────
+// -- Custom SVG Dance Icons ----------------------------------------------------
 const BharatanatyamIcon = ({ size=32, color=C.maroon }:{size?:number;color?:string}) => (
   <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="20" cy="6.5" r="3.2" fill={color} opacity="0.9"/>
@@ -72,7 +83,7 @@ const BharatanatyamIcon = ({ size=32, color=C.maroon }:{size?:number;color?:stri
     {/* Right arm extended */}
     <path d="M19.5 12 L28 15.5 L31 13.5" stroke={color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/>
     <path d="M31 13.5 L32.5 15" stroke={color} strokeWidth="1.2" strokeLinecap="round"/>
-    {/* Left leg (aramandi — wide stance bent) */}
+    {/* Left leg (aramandi � wide stance bent) */}
     <path d="M19 21 L13.5 28 L11 34.5" stroke={color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/>
     {/* Right leg extended */}
     <path d="M19 21 L25.5 27.5 L28.5 32.5" stroke={color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/>
@@ -188,38 +199,29 @@ const Corner = ({ flip=false }:{flip?:boolean}) => (
   </svg>
 );
 
-// ── Data ──────────────────────────────────────────────────────────────────────
+// -- Data ----------------------------------------------------------------------
 export const FALLBACK_BATCHES: Batch[] = [
-  { id:1, name:"Online Weekend", teluguName:"ఆన్‌లైన్ వారాంతం", fee:2500, Icon:Monitor,   schedule:"Sat & Sun",     time:"10:00 AM – 12:00 PM", mode:"Online",        tag:"Popular",       danceIcon:<BharatanatyamIcon size={30}/> },
-  { id:2, name:"Online Weekday", teluguName:"ఆన్‌లైన్ వారదినం",  fee:2500, Icon:Globe,     schedule:"Mon – Fri",     time:"7:00 PM – 8:30 PM",   mode:"Online",        tag:"Flexible",      danceIcon:<KuchipudiIcon size={30}/> },
-  { id:3, name:"Traya Abroad",   teluguName:"త్రయ విదేశం",        fee:5000, Icon:Plane,     schedule:"Flexible",      time:"By Schedule",         mode:"Hybrid",        tag:"Premium",       danceIcon:<BharatanatyamIcon size={30}/> },
-  { id:4, name:"Traya India",    teluguName:"త్రయ భారత్",          fee:3200, Icon:MapPin,    schedule:"Tue, Thu, Sat", time:"6:00 PM – 8:00 PM",   mode:"Offline",       tag:"Intensive",     danceIcon:<KuchipudiIcon size={30}/> },
-  { id:5, name:"Offline",        teluguName:"ఆఫ్‌లైన్",            fee:1500, Icon:Building2, schedule:"Mon, Wed, Fri", time:"5:00 PM – 7:00 PM",   mode:"In-Person",     tag:"Best Value",    danceIcon:<BharatanatyamIcon size={30}/> },
-  { id:6, name:"Abroad",         teluguName:"విదేశీ బ్యాచ్",       fee:4000, Icon:Globe,     schedule:"Weekends",      time:"As Scheduled",        mode:"International", tag:"International", danceIcon:<KuchipudiIcon size={30}/> },
+  { id:1, name:"Online Weekend", teluguName:"???????? ???????", fee:2500, Icon:Monitor,   schedule:"Sat & Sun",     time:"10:00 AM � 12:00 PM", mode:"Online",        tag:"Popular",       danceIcon:<BharatanatyamIcon size={30}/> },
+  { id:2, name:"Online Weekday", teluguName:"???????? ???????",  fee:2500, Icon:Globe,     schedule:"Mon � Fri",     time:"7:00 PM � 8:30 PM",   mode:"Online",        tag:"Flexible",      danceIcon:<KuchipudiIcon size={30}/> },
+  { id:3, name:"Traya Abroad",   teluguName:"???? ??????",        fee:5000, Icon:Plane,     schedule:"Flexible",      time:"By Schedule",         mode:"Hybrid",        tag:"Premium",       danceIcon:<BharatanatyamIcon size={30}/> },
+  { id:4, name:"Traya India",    teluguName:"???? ?????",          fee:3200, Icon:MapPin,    schedule:"Tue, Thu, Sat", time:"6:00 PM � 8:00 PM",   mode:"Offline",       tag:"Intensive",     danceIcon:<KuchipudiIcon size={30}/> },
+  { id:5, name:"Offline",        teluguName:"????????",            fee:1500, Icon:Building2, schedule:"Mon, Wed, Fri", time:"5:00 PM � 7:00 PM",   mode:"In-Person",     tag:"Best Value",    danceIcon:<BharatanatyamIcon size={30}/> },
+  { id:6, name:"Abroad",         teluguName:"?????? ??????",       fee:4000, Icon:Globe,     schedule:"Weekends",      time:"As Scheduled",        mode:"International", tag:"International", danceIcon:<KuchipudiIcon size={30}/> },
 ];
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const GUIDELINES = [
-  "తరగతులకు క్రమం తప్పకుండా హాజరు కావాలి · Attend classes regularly; inform in advance if unable.",
-  "సాంప్రదాయ లేదా సౌకర్యవంతమైన నృత్య దుస్తులు ధరించాలి · Wear appropriate dance attire.",
-  "గురువు మరియు సహాధ్యాయులను గౌరవించాలి · Respect the Guru and fellow students at all times.",
-  "కోర్సు ఫీజు మొదటి రోజున చెల్లించాలి · Complete course fee payment by the first day.",
-  "అనుమతి లేకుండా సెషన్‌లను రికార్డ్ చేయకూడదు · No recording of sessions without prior permission.",
-  "సెషన్‌ల మధ్య ఇంట్లో సాధన చేయాలి · Practice at home between sessions for best progress.",
-  "కోర్సు మెటీరియల్ ఆనందమయికి చెందుతుంది · Course materials remain property of Anandamayi.",
+  "???????? ????? ????????? ????? ?????? � Attend classes regularly; inform in advance if unable.",
+  "????????? ???? ???????????? ????? ???????? ???????? � Wear appropriate dance attire.",
+  "?????? ????? ???????????? ?????????? � Respect the Guru and fellow students at all times.",
+  "?????? ???? ????? ????? ??????????? � Complete course fee payment by the first day.",
+  "?????? ??????? ????????? ???????? ???????? � No recording of sessions without prior permission.",
+  "??????? ???? ?????? ???? ?????? � Practice at home between sessions for best progress.",
+  "?????? ????????? ????????? ?????????? � Course materials remain property of Anandamayi.",
 ];
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function useCountUp(end: number, dur=1400): number {
-  const [n, setN] = useState(0);
-  useEffect(()=>{
-    let v=0; const step=Math.max(1,Math.ceil(end/(dur/16)));
-    const id=setInterval(()=>{ v=Math.min(v+step,end); setN(v); if(v>=end)clearInterval(id); },16);
-    return ()=>clearInterval(id);
-  },[end,dur]);
-  return n;
-}
+// -- Helpers -------------------------------------------------------------------
 async function apiPost(ep: string, data: unknown) {
   try {
     const r=await fetch(`${API}/${ep}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
@@ -231,6 +233,25 @@ async function apiGet<T>(ep: string): Promise<T> {
   const r = await fetch(`${API}/${ep}`);
   if (!r.ok) throw new Error("Failed to fetch");
   return r.json() as Promise<T>;
+}
+
+function buildUpiPaymentLink({
+  upiId,
+  amount,
+  batchName,
+}: {
+  upiId: string;
+  amount: number;
+  batchName: string;
+}) {
+  const params = new URLSearchParams({
+    pa: upiId,
+    pn: "Anandamayi Nrutyalaya",
+    tn: `${batchName} fee payment`,
+    am: amount.toFixed(2),
+    cu: "INR",
+  });
+  return `upi://pay?${params.toString()}`;
 }
 
 function formatTimeLabel(value?: string) {
@@ -263,7 +284,7 @@ function mapBatchFromApi(batch: BatchApi): Batch {
     fee: Number(batch.fee || 0),
     Icon: visuals.Icon,
     schedule: batch.days || "Schedule to be announced",
-    time: `${formatTimeLabel(batch.start_time)}${batch.end_time ? ` – ${formatTimeLabel(batch.end_time)}` : ""}`.trim(),
+    time: `${formatTimeLabel(batch.start_time)}${batch.end_time ? ` � ${formatTimeLabel(batch.end_time)}` : ""}`.trim(),
     mode: titleCase(batch.mode || "ONLINE"),
     tag: titleCase(batch.type || "POPULAR"),
     teacher: String(batch.trainer || "").trim(),
@@ -271,7 +292,7 @@ function mapBatchFromApi(batch: BatchApi): Batch {
   };
 }
 
-// ── Ornament Divider ──────────────────────────────────────────────────────────
+// -- Ornament Divider ----------------------------------------------------------
 function OrnamentDivider() {
   return (
     <div style={{display:"flex",alignItems:"center",gap:12,margin:"14px 0"}}>
@@ -282,7 +303,7 @@ function OrnamentDivider() {
   );
 }
 
-// ── Navbar ────────────────────────────────────────────────────────────────────
+// -- Navbar --------------------------------------------------------------------
 const TABS: Tab[] = ["Home","Batches","Register","Payment","Contact"];
 
 function NavBar({ active, set }:{active:Tab;set:(t:Tab)=>void}) {
@@ -297,7 +318,7 @@ function NavBar({ active, set }:{active:Tab;set:(t:Tab)=>void}) {
           </div>
           <div>
             <div style={{fontFamily:"'DM Serif Display',serif",fontSize:18,fontWeight:400,color:C.maroon,letterSpacing:"0.12em",lineHeight:1}}>ANANDAMAYI</div>
-            <div style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:12,color:C.maroonLight,lineHeight:1.15}}>ఆనందమయి నృత్యాల</div>
+            <div style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:12,color:C.maroonLight,lineHeight:1.15}}>??????? ???????</div>
             <div style={{fontSize:8,color:C.bronzeLight,letterSpacing:"0.42em",textTransform:"uppercase",fontWeight:700,marginTop:2}}>Dance Academy</div>
           </div>
         </div>
@@ -322,9 +343,8 @@ function NavBar({ active, set }:{active:Tab;set:(t:Tab)=>void}) {
   );
 }
 
-// ── Hero ──────────────────────────────────────────────────────────────────────
-function HeroSection({ setTab, batchCount }:{setTab:(t:Tab)=>void;batchCount:number}) {
-  const students=useCountUp(1200), years=useCountUp(15), batches=useCountUp(batchCount);
+// -- Hero ----------------------------------------------------------------------
+function HeroSection({ setTab }:{setTab:(t:Tab)=>void;batchCount:number}) {
   return (
     <section style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",position:"relative",overflow:"hidden",paddingTop:80,background:`linear-gradient(155deg,${C.sandLight} 0%,${C.parchment} 50%,${C.sand} 100%)`}}>
       {/* Mandala */}
@@ -349,55 +369,38 @@ function HeroSection({ setTab, batchCount }:{setTab:(t:Tab)=>void;batchCount:num
         {/* Eyebrow */}
         <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:14,marginBottom:28}}>
           <div style={{height:1,width:44,background:`linear-gradient(to right,transparent,${C.maroon})`}}/>
-          <span style={{fontSize:9,letterSpacing:"0.5em",color:C.maroonLight,textTransform:"uppercase",fontFamily:"'DM Serif Display',serif"}}>Bharatanatyam · Kuchipudi · Classical Arts</span>
+          <span style={{fontSize:9,letterSpacing:"0.5em",color:C.maroonLight,textTransform:"uppercase",fontFamily:"'DM Serif Display',serif"}}>Bharatanatyam ? Kuchipudi ? Classical Arts</span>
           <div style={{height:1,width:44,background:`linear-gradient(to left,transparent,${C.maroon})`}}/>
         </div>
 
         {/* Telugu title */}
-        <div style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:"clamp(1.2rem,3.2vw,2rem)",color:C.maroonLight,marginBottom:4,letterSpacing:"0.02em"}}>
-          ఆనందమయి నృత్యాల
-        </div>
-
-        {/* English */}
+        
         <h1 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(3rem,8.5vw,6.5rem)",fontWeight:900,color:C.deep,lineHeight:1,marginBottom:4}}>
-          Ananda<span style={{color:C.maroon}}>mayi</span>
+          Anandamayi <span style={{color:C.maroon}}>Nrutyalaya</span>
         </h1>
 
         {/* Tagline with dance icons */}
         <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:20,margin:"16px 0 22px",flexWrap:"wrap"}}>
           <BharatanatyamIcon size={38} color={C.maroon}/>
           <div style={{textAlign:"center"}}>
-            <p style={{fontFamily:"'Manrope','Segoe UI',sans-serif",fontStyle:"italic",fontSize:"clamp(0.9rem,1.8vw,1.25rem)",color:C.bronze,letterSpacing:"0.1em"}}>Where movement becomes meditation</p>
-            <p style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:"clamp(0.8rem,1.4vw,1rem)",color:C.maroonLight,marginTop:3}}>చలనమే ధ్యానంగా మారే చోట</p>
+            <p style={{fontFamily:"'Manrope','Segoe UI',sans-serif",fontStyle:"italic",fontSize:"clamp(0.9rem,1.8vw,1.25rem)",color:C.bronze,letterSpacing:"0.1em"}}>A graceful home for Bharatanatyam and Kuchipudi.</p>
+            
           </div>
           <KuchipudiIcon size={38} color={C.maroon}/>
         </div>
 
         <OrnamentDivider/>
 
-        {/* Stats */}
-        <div style={{display:"flex",justifyContent:"center",gap:"clamp(1.5rem,5vw,4rem)",margin:"28px 0 36px",flexWrap:"wrap"}}>
-          {[{v:students,s:"+",label:"Students Trained",te:"విద్యార్థులు",Icon:Users},{v:years,s:"",label:"Years of Guruship",te:"సంవత్సరాలు",Icon:Award},{v:batches,s:"",label:"Active Batches",te:"బ్యాచ్‌లు",Icon:Music}].map(({v,s,label,te,Icon:I})=>(
-            <div key={label} style={{textAlign:"center"}}>
-              <I size={14} style={{color:C.maroonLight,marginBottom:4}}/>
-              <div style={{fontFamily:"'DM Serif Display',serif",fontSize:40,fontWeight:700,color:C.maroon,lineHeight:1}}>{v}{s}</div>
-              <div style={{fontSize:9,letterSpacing:"0.3em",color:C.bronze,textTransform:"uppercase",marginTop:2}}>{label}</div>
-              <div style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:11,color:C.maroonLight,marginTop:1}}>{te}</div>
-            </div>
-          ))}
-        </div>
-
         {/* CTAs */}
         <div style={{display:"flex",gap:14,justifyContent:"center",flexWrap:"wrap"}}>
           <Button onClick={()=>setTab("Register")} style={{background:`linear-gradient(135deg,${C.maroon},${C.maroonMid})`,color:C.cream,fontFamily:"'DM Serif Display',serif",letterSpacing:"0.14em",fontSize:13,fontWeight:700,padding:"12px 32px",borderRadius:2,border:"none",boxShadow:`0 4px 20px ${C.maroon}35`,cursor:"pointer",transition:"all 0.2s"}}
             onMouseEnter={e=>{(e.currentTarget as HTMLButtonElement).style.transform="translateY(-2px)";(e.currentTarget as HTMLButtonElement).style.boxShadow=`0 8px 28px ${C.maroon}45`;}}
             onMouseLeave={e=>{(e.currentTarget as HTMLButtonElement).style.transform="";(e.currentTarget as HTMLButtonElement).style.boxShadow=`0 4px 20px ${C.maroon}35`;}}>
-            నమోదు చేయండి · Register <ChevronRight size={14} style={{marginLeft:4}}/>
+            ????? ?????? � Register <ChevronRight size={14} style={{marginLeft:4}}/>
           </Button>
           <Button onClick={()=>setTab("Batches")} style={{background:"transparent",color:C.maroon,border:`1.5px solid ${C.maroon}55`,fontFamily:"'DM Serif Display',serif",letterSpacing:"0.14em",fontSize:13,padding:"12px 32px",borderRadius:2,cursor:"pointer"}}
             onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.background=`${C.maroon}0e`}
-            onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.background="transparent"}>
-            బ్యాచ్‌లు చూడండి · View Batches
+            onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.background="transparent"}>            View Batches
           </Button>
         </div>
       </div>
@@ -409,7 +412,7 @@ function HeroSection({ setTab, batchCount }:{setTab:(t:Tab)=>void;batchCount:num
   );
 }
 
-// ── Batch Card ────────────────────────────────────────────────────────────────
+// -- Batch Card ----------------------------------------------------------------
 function BatchCard({b,selected,onSelect}:{b:Batch;selected:boolean;onSelect:(x:Batch)=>void}) {
   return (
     <Card onClick={()=>onSelect(b)} style={{cursor:"pointer",transition:"all 0.25s",borderRadius:10,background:selected?`linear-gradient(180deg, ${C.white}, ${C.parchment})`:C.white,border:`1.5px solid ${selected?C.maroon:C.maroon+"20"}`,transform:selected?"translateY(-6px)":"",boxShadow:selected?`0 18px 40px ${C.maroon}22`:`0 8px 20px rgba(61,10,18,0.07)`,overflow:"hidden"}}
@@ -446,7 +449,7 @@ function BatchCard({b,selected,onSelect}:{b:Batch;selected:boolean;onSelect:(x:B
         </div>
         <div style={{display:"flex",alignItems:"end",justifyContent:"space-between",gap:10}}>
           <div style={{display:"flex",alignItems:"baseline",gap:2}}>
-            <span style={{fontFamily:"'DM Serif Display',serif",fontSize:13,color:C.maroon}}>₹</span>
+            <span style={{fontFamily:"'DM Serif Display',serif",fontSize:13,color:C.maroon}}>?</span>
             <span style={{fontFamily:"'DM Serif Display',serif",fontSize:34,fontWeight:700,color:C.maroon,lineHeight:1}}>{b.fee.toLocaleString()}</span>
             <span style={{fontSize:10,color:C.bronzeLight}}>/course</span>
           </div>
@@ -457,7 +460,7 @@ function BatchCard({b,selected,onSelect}:{b:Batch;selected:boolean;onSelect:(x:B
   );
 }
 
-// ── Batches Page ──────────────────────────────────────────────────────────────
+// -- Batches Page --------------------------------------------------------------
 function BatchesSection({onRegister,batches}:{onRegister:(b:Batch)=>void;batches:Batch[]}) {
   const [sel,setSel]=useState<Batch|null>(null);
   const lowestFee = batches.length ? Math.min(...batches.map((b)=>b.fee || 0)) : 0;
@@ -468,19 +471,18 @@ function BatchesSection({onRegister,batches}:{onRegister:(b:Batch)=>void;batches
           <div style={{display:"flex",justifyContent:"center",gap:28,marginBottom:14,opacity:0.6}}>
             <BharatanatyamIcon size={44} color={C.maroon}/><KuchipudiIcon size={44} color={C.maroon}/>
           </div>
-          <p style={{fontSize:9,letterSpacing:"0.5em",color:C.bronze,textTransform:"uppercase",marginBottom:8}}>బ్యాచ్ ఎంచుకోండి · Choose Your Path</p>
+          <p style={{fontSize:9,letterSpacing:"0.5em",color:C.bronze,textTransform:"uppercase",marginBottom:8}}>?????? ????????? � Choose Your Path</p>
           <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(2rem,5vw,3rem)",color:C.deep}}>Our <span style={{color:C.maroon}}>Batches</span></h2>
-          <p style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:14,color:C.maroonLight,marginTop:4}}>మా బ్యాచ్‌లు</p>
-          <OrnamentDivider/>
+                    <OrnamentDivider/>
           <p style={{color:C.bronze,maxWidth:480,margin:"0 auto",fontSize:13,lineHeight:1.8,fontFamily:"'Manrope','Segoe UI',sans-serif"}}>
-            Bharatanatyam · Kuchipudi · Classical Indian Dance<br/>
-            <span style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:12,color:C.maroonLight}}>భరతనాట్యం · కూచిపూడి · శాస్త్రీయ నృత్యం</span>
+            Bharatanatyam � Kuchipudi � Classical Indian Dance<br/>
+            <span style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:12,color:C.maroonLight}}>????????? � ???????? � ????????? ??????</span>
           </p>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:12,marginBottom:28}}>
           {[
             {label:"Live Batches", value:String(batches.length)},
-            {label:"Starting Fee", value:`₹${lowestFee.toLocaleString()}`},
+            {label:"Starting Fee", value:`?${lowestFee.toLocaleString()}`},
             {label:"Modes", value:Array.from(new Set(batches.map((b)=>b.mode))).length.toString()},
           ].map((item)=>(
             <div key={item.label} style={{background:`linear-gradient(135deg, ${C.white}, ${C.parchment})`,border:`1px solid ${C.maroon}16`,borderRadius:10,padding:"14px 16px",boxShadow:`0 8px 20px ${C.maroon}08`}}>
@@ -495,7 +497,7 @@ function BatchesSection({onRegister,batches}:{onRegister:(b:Batch)=>void;batches
         {sel&&(
           <div style={{display:"flex",justifyContent:"center"}}>
             <Button onClick={()=>onRegister(sel)} style={{background:`linear-gradient(135deg,${C.maroon},${C.maroonMid})`,color:C.cream,fontFamily:"'DM Serif Display',serif",letterSpacing:"0.14em",fontSize:13,fontWeight:700,padding:"14px 42px",borderRadius:999,border:"none",boxShadow:`0 10px 24px ${C.maroon}32`,cursor:"pointer"}}>
-              {sel.teluguName} కోసం నమోదు · Register for {sel.name} <ChevronRight size={15} style={{marginLeft:6}}/>
+              {sel.teluguName} ???? ????? � Register for {sel.name} <ChevronRight size={15} style={{marginLeft:6}}/>
             </Button>
           </div>
         )}
@@ -504,7 +506,7 @@ function BatchesSection({onRegister,batches}:{onRegister:(b:Batch)=>void;batches
   );
 }
 
-// ── Chat Bubble ───────────────────────────────────────────────────────────────
+// -- Chat Bubble ---------------------------------------------------------------
 function Bubble({msg}:{msg:Message}) {
   const u=msg.from==="user";
   return (
@@ -521,7 +523,7 @@ function Bubble({msg}:{msg:Message}) {
   );
 }
 
-// ── Registration Chatbot ──────────────────────────────────────────────────────
+// -- Registration Chatbot ------------------------------------------------------
 function ChatBot({
   initialBatch,
   onProceedToPayment,
@@ -547,10 +549,10 @@ function ChatBot({
   const handleBatchSelect = useCallback((b:Batch)=>{
     setError("");
     setBatch(b);setForm(f=>({...f,batch:b.name}));
-    add(`${b.teluguName} · ${b.name} (₹${b.fee.toLocaleString()})`, "user");
+    add(`${b.teluguName} � ${b.name} (?${b.fee.toLocaleString()})`, "user");
     setTimeout(()=>{
-      add(`${b.name} / ${b.teluguName} వివరాలు:\n\n📅 Schedule: ${b.schedule}\n⏰ Timing: ${b.time}\n💰 Fee: ₹${b.fee.toLocaleString()}\n🎓 Mode: ${b.mode}`);
-      setTimeout(()=>{add("దయచేసి మా నిబంధనలు చదవండి · Please review our guidelines:","bot","guidelines");setStep("guidelines");},900);
+      add(`${b.name} / ${b.teluguName} ???????:\n\n?? Schedule: ${b.schedule}\n? Timing: ${b.time}\n?? Fee: ?${b.fee.toLocaleString()}\n?? Mode: ${b.mode}`);
+      setTimeout(()=>{add("?????? ?? ???????? ?????? � Please review our guidelines:","bot","guidelines");setStep("guidelines");},900);
     },600);
   }, [add]);
 
@@ -565,9 +567,9 @@ function ChatBot({
     setMessages([]);
     setStep("welcome");
     setAgreed(false);
-    timers.push(setTimeout(()=>add("🙏 నమస్తే! Anandamayi Nrutyala కి స్వాగతం!\nWelcome! I'm here to guide you through registration."),300));
+    timers.push(setTimeout(()=>add("?? ??????! Anandamayi Nrutyalaya ?? ???????!\nWelcome! I'm here to guide you through registration."),300));
     timers.push(setTimeout(()=>{
-      add("మీకు నచ్చిన బ్యాచ్ ఎంచుకోండి · Please choose your batch:","bot","batch_picker");
+      add("???? ?????? ?????? ????????? � Please choose your batch:","bot","batch_picker");
       setStep("batch_select");
       if (initialBatch) {
         timers.push(setTimeout(()=>handleBatchSelect(initialBatch),200));
@@ -579,7 +581,7 @@ function ChatBot({
 
   const handleAgree=()=>{
     setAgreed(true);
-    add("నేను అన్ని నిబంధనలకు అంగీకరిస్తున్నాను · I agree to all guidelines.","user");
+    add("???? ????? Payment Received?? � I agree to all guidelines.","user");
     setTimeout(()=>add("Are you a new student or an existing student?","bot","student_type"),500);
     setStep("student_type");
   };
@@ -597,15 +599,16 @@ function ChatBot({
       setError(response.error || "Unable to continue. Please try again.");
       return;
     }
-    const studentName = studentType==="existing" ? response.student?.name || form.name || "Student" : form.name;
+    const studentName = response.student?.name || form.name || "Student";
     add(`Name: ${studentName} | Phone: ${form.phone}`,"user");
     add("Redirecting you to the payment page now.");
     onProceedToPayment({
       studentId: response.studentId || response.student?.id,
       name: studentName,
-      phone: form.phone,
-      email: form.email,
+      phone: response.student?.phone || form.phone,
+      email: response.student?.email || form.email,
       batch,
+      studentType,
     });
   };
 
@@ -614,16 +617,15 @@ function ChatBot({
       {!floating&&(
         <div style={{textAlign:"center",marginBottom:28}}>
           <div style={{display:"flex",justifyContent:"center",marginBottom:10,opacity:0.65}}><BharatanatyamIcon size={40} color={C.maroon}/></div>
-          <p style={{fontSize:9,letterSpacing:"0.5em",color:C.bronze,textTransform:"uppercase",marginBottom:6}}>నమోదు · Registration Portal</p>
-          <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,color:C.deep}}>Join <span style={{color:C.maroon}}>Anandamayi</span></h2>
-          <p style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:13,color:C.maroonLight,marginTop:2}}>ఆనందమయిలో చేరండి</p>
-        </div>
+          <p style={{fontSize:9,letterSpacing:"0.5em",color:C.bronze,textTransform:"uppercase",marginBottom:6}}>????? � Registration Portal</p>
+          <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,color:C.deep}}>Join <span style={{color:C.maroon}}>Anandamayi Nrutyalayaya</span></h2>
+                  </div>
       )}
       <Card style={{background:C.white,border:`1.5px solid ${C.maroon}18`,borderRadius:4,boxShadow:`0 4px 24px ${C.maroon}10`,width:"100%"}}>
           <CardContent style={{padding:0}}>
             <div style={{padding:"10px 18px",borderBottom:`1px solid ${C.maroon}10`,background:`${C.parchment}55`,display:"flex",alignItems:"center",gap:10}}>
               <div style={{width:8,height:8,borderRadius:"50%",background:C.maroon,opacity:0.7,animation:"pulse 2s infinite"}}/>
-              <span style={{fontSize:10,letterSpacing:"0.28em",color:C.maroonLight,textTransform:"uppercase",fontFamily:"'DM Serif Display',serif",flex:1}}>Live Registration · నేరుగా నమోదు</span>
+              <span style={{fontSize:10,letterSpacing:"0.28em",color:C.maroonLight,textTransform:"uppercase",fontFamily:"'DM Serif Display',serif",flex:1}}>Live Registration � ?????? ?????</span>
               {floating&&<button onClick={()=>setOpen(false)} style={{background:"none",border:"none",color:C.maroon,cursor:"pointer"}}><X size={16}/></button>}
             </div>
             <ScrollArea style={{height:470,padding:"18px"}}>
@@ -640,8 +642,8 @@ function ChatBot({
                             {b.danceIcon}
                             <div>
                               <p style={{fontFamily:"'DM Serif Display',serif",fontSize:11,color:C.deep,lineHeight:1.2}}>{b.name}</p>
-                              <p style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:10,color:C.maroonLight}}>{b.teluguName}</p>
-                              <p style={{fontSize:11,color:C.maroon,fontWeight:600,fontFamily:"'DM Serif Display',serif"}}>₹{b.fee.toLocaleString()}</p>
+                <p style={{fontSize:10,color:C.maroonLight}}>{b.mode} - {b.schedule}</p>
+                              <p style={{fontSize:11,color:C.maroon,fontWeight:600,fontFamily:"'DM Serif Display',serif"}}>?{b.fee.toLocaleString()}</p>
                             </div>
                           </button>
                         ))}
@@ -649,7 +651,7 @@ function ChatBot({
                     )}
                     {msg.extra==="guidelines"&&step==="guidelines"&&(
                       <div style={{marginTop:10,background:`${C.parchment}65`,border:`1px solid ${C.maroon}18`,borderRadius:4,padding:"14px 16px"}}>
-                        <p style={{fontSize:9,letterSpacing:"0.4em",color:C.bronze,textTransform:"uppercase",marginBottom:10,display:"flex",alignItems:"center",gap:6}}><BookOpen size={10} style={{color:C.maroon}}/>నిబంధనలు · Guidelines</p>
+                        <p style={{fontSize:9,letterSpacing:"0.4em",color:C.bronze,textTransform:"uppercase",marginBottom:10,display:"flex",alignItems:"center",gap:6}}><BookOpen size={10} style={{color:C.maroon}}/>???????? � Guidelines</p>
                         <div style={{display:"flex",flexDirection:"column",gap:7,marginBottom:14}}>
                           {GUIDELINES.map((g,i)=>(
                             <div key={i} style={{display:"flex",gap:7,fontSize:12,color:C.deep,lineHeight:1.65,fontFamily:"'Manrope','Segoe UI',sans-serif"}}>
@@ -657,15 +659,15 @@ function ChatBot({
                             </div>
                           ))}
                         </div>
-                        {!agreed&&<Button onClick={handleAgree} size="sm" style={{background:`linear-gradient(135deg,${C.maroon},${C.maroonMid})`,color:C.cream,border:"none",borderRadius:2,fontFamily:"'DM Serif Display',serif",letterSpacing:"0.1em",fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",gap:5}}><CheckCircle2 size={11}/>అంగీకరిస్తున్నాను · I Agree</Button>}
+                        {!agreed&&<Button onClick={handleAgree} size="sm" style={{background:`linear-gradient(135deg,${C.maroon},${C.maroonMid})`,color:C.cream,border:"none",borderRadius:2,fontFamily:"'DM Serif Display',serif",letterSpacing:"0.1em",fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",gap:5}}><CheckCircle2 size={11}/>????????????????? � I Agree</Button>}
                       </div>
                     )}
                     {msg.extra==="student_type"&&step==="student_type"&&(
                       <div style={{marginTop:10,display:"flex",gap:10,flexWrap:"wrap"}}>
-                        <Button size="sm" onClick={()=>{setStudentType("new");add("New student registration","user");setTimeout(()=>{add("నమోదు ఫారం · Registration Form:","bot","form");setStep("form");},400);}} style={{background:`linear-gradient(135deg,${C.maroon},${C.maroonMid})`,color:C.cream,border:"none",borderRadius:2,fontFamily:"'DM Serif Display',serif",letterSpacing:"0.1em",fontSize:11,cursor:"pointer"}}>
+                        <Button size="sm" onClick={()=>{setStudentType("new");add("New student registration","user");setTimeout(()=>{add("????? ???? � Registration Form:","bot","form");setStep("form");},400);}} style={{background:`linear-gradient(135deg,${C.maroon},${C.maroonMid})`,color:C.cream,border:"none",borderRadius:2,fontFamily:"'DM Serif Display',serif",letterSpacing:"0.1em",fontSize:11,cursor:"pointer"}}>
                           New Student
                         </Button>
-                        <Button size="sm" onClick={()=>{setStudentType("existing");add("Existing student login","user");setTimeout(()=>{add("ఫోన్ నంబర్‌తో కొనసాగండి · Continue with your registered phone number.","bot","form");setStep("form");},400);}} style={{background:C.white,color:C.maroon,border:`1px solid ${C.maroon}35`,borderRadius:2,fontFamily:"'DM Serif Display',serif",letterSpacing:"0.1em",fontSize:11,cursor:"pointer"}}>
+                        <Button size="sm" onClick={()=>{setStudentType("existing");add("Existing student login","user");setTimeout(()=>{add("???? ???????? ????????? � Continue with your registered phone number.","bot","form");setStep("form");},400);}} style={{background:C.white,color:C.maroon,border:`1px solid ${C.maroon}35`,borderRadius:2,fontFamily:"'DM Serif Display',serif",letterSpacing:"0.1em",fontSize:11,cursor:"pointer"}}>
                           Existing Student
                         </Button>
                       </div>
@@ -673,8 +675,8 @@ function ChatBot({
                     {msg.extra==="form"&&step==="form"&&(
                       <div style={{marginTop:10,background:`${C.parchment}65`,border:`1px solid ${C.maroon}18`,borderRadius:4,padding:"14px 16px",display:"flex",flexDirection:"column",gap:10}}>
                         {([
-                          ...(studentType==="new" ? [["విద్యార్థి పేరు · Name *","name","text"],["Email","email","email"]] : []),
-                          ["Phone · ఫోన్ *","phone","tel"],
+                          ...(studentType==="new" ? [["?????????? ???? � Name *","name","text"],["Email","email","email"]] : []),
+                          ["Phone � ???? *","phone","tel"],
                         ] as [string,keyof FormData,string][]).map(([label,key,type])=>(
                           <div key={key}>
                             <Label style={{fontSize:9,letterSpacing:"0.28em",color:C.bronze,textTransform:"uppercase"}}>{label}</Label>
@@ -682,9 +684,9 @@ function ChatBot({
                           </div>
                         ))}
                         <div>
-                          <Label style={{fontSize:9,letterSpacing:"0.28em",color:C.bronze,textTransform:"uppercase"}}>ఎంచుకున్న బ్యాచ్ · Batch</Label>
+                          <Label style={{fontSize:9,letterSpacing:"0.28em",color:C.bronze,textTransform:"uppercase"}}>????????? ?????? � Batch</Label>
                           <div style={{marginTop:3,padding:"8px 12px",background:`${C.maroon}07`,border:`1px solid ${C.maroon}1e`,borderRadius:2,fontFamily:"'DM Serif Display',serif",color:C.maroon,fontSize:13,display:"flex",justifyContent:"space-between"}}>
-                            <span>{batch?.name}</span><span style={{fontWeight:700}}>₹{batch?.fee?.toLocaleString()}</span>
+                            <span>{batch?.name}</span><span style={{fontWeight:700}}>?{batch?.fee?.toLocaleString()}</span>
                           </div>
                         </div>
                         <Button onClick={handleFormSubmit} disabled={loading} style={{height:38,background:`linear-gradient(135deg,${C.maroon},${C.maroonMid})`,color:C.cream,border:"none",borderRadius:2,fontFamily:"'DM Serif Display',serif",letterSpacing:"0.1em",fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
@@ -765,13 +767,14 @@ function RegisterSection({
       return;
     }
 
-    const studentName = studentType==="existing" ? response.student?.name || form.name || "Student" : form.name;
+    const studentName = response.student?.name || form.name || "Student";
     onProceedToPayment({
       studentId: response.studentId || response.student?.id,
       name: studentName,
-      phone: form.phone,
-      email: form.email,
+      phone: response.student?.phone || form.phone,
+      email: response.student?.email || form.email,
       batch: selectedBatch,
+      studentType,
     });
   };
 
@@ -779,9 +782,9 @@ function RegisterSection({
     <section style={{paddingTop:108,paddingBottom:80,padding:"108px 1rem 80px",background:`linear-gradient(180deg,${C.sandLight},${C.cream})`,minHeight:"100vh",position:"relative"}}>
       <div style={{maxWidth:1100,margin:"0 auto"}}>
         <div style={{textAlign:"center",marginBottom:36}}>
-          <p style={{fontSize:9,letterSpacing:"0.5em",color:C.bronze,textTransform:"uppercase",marginBottom:6}}>Register · Login</p>
+          <p style={{fontSize:9,letterSpacing:"0.5em",color:C.bronze,textTransform:"uppercase",marginBottom:6}}>Register � Login</p>
           <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(2rem,5vw,2.8rem)",color:C.deep}}>Student <span style={{color:C.maroon}}>Access</span></h2>
-          <p style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:13,color:C.maroonLight,marginTop:4}}>సాధారణ ఫారమ్ ద్వారా కొనసాగండి</p>
+          <p style={{fontSize:13,color:C.maroonLight,marginTop:4}}>Continue with the standard form.</p>
         </div>
 
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(320px,1fr))",gap:24,alignItems:"start"}}>
@@ -796,7 +799,7 @@ function RegisterSection({
                     {b.danceIcon}
                     <span style={{fontFamily:"'DM Serif Display',serif",fontSize:12,color:C.deep}}>{b.name}</span>
                   </div>
-                  <p style={{fontSize:11,color:C.maroon}}>₹{b.fee.toLocaleString()}</p>
+                  <p style={{fontSize:11,color:C.maroon}}>?{b.fee.toLocaleString()}</p>
                 </button>
               );})}
             </CardContent>
@@ -828,7 +831,7 @@ function RegisterSection({
                 <Input value={form.phone} onChange={e=>setForm(f=>({...f,phone:e.target.value}))} style={{marginTop:3,height:36,background:C.sandLight,border:`1px solid ${C.maroon}22`,borderRadius:2}}/>
               </div>
               <div style={{padding:"10px 12px",background:`${C.maroon}07`,border:`1px solid ${C.maroon}1e`,borderRadius:2,fontSize:13,color:C.maroon}}>
-                {selectedBatch ? `${selectedBatch.name} · ₹${selectedBatch.fee.toLocaleString()}` : "Select a batch to continue"}
+                {selectedBatch ? `${selectedBatch.name} � ?${selectedBatch.fee.toLocaleString()}` : "Select a batch to continue"}
               </div>
               <Button onClick={submit} disabled={loading} style={{height:40,background:`linear-gradient(135deg,${C.maroon},${C.maroonMid})`,color:C.cream,border:"none",borderRadius:2,fontFamily:"'DM Serif Display',serif",letterSpacing:"0.12em",fontSize:13}}>
                 {loading?<Loader2 size={14} style={{animation:"spin 1s linear infinite"}}/>:<FileText size={14} style={{marginRight:6}}/>}
@@ -844,7 +847,7 @@ function RegisterSection({
   );
 }
 
-// ── Payment ───────────────────────────────────────────────────────────────────
+// -- Payment -------------------------------------------------------------------
 function PaymentSection({ initialSession, batches }:{ initialSession:StudentSession|null;batches:Batch[] }) {
   const [sel,setSel]=useState<Batch|null>(initialSession?.batch ?? null);
   const [form,setForm]=useState<FormData>({
@@ -858,6 +861,8 @@ function PaymentSection({ initialSession, batches }:{ initialSession:StudentSess
   const [submitted,setSubmitted]=useState(false);
   const [loading,setLoading]=useState(false);
   const [error,setError]=useState("");
+  const [activeQr,setActiveQr]=useState<ActiveQrCode|null>(null);
+  const [qrImageUrl,setQrImageUrl]=useState("");
 
   useEffect(()=>{
     if (!initialSession) return;
@@ -871,6 +876,49 @@ function PaymentSection({ initialSession, batches }:{ initialSession:StudentSess
       batch: initialSession.batch?.name || f.batch,
     }));
   },[initialSession]);
+
+  useEffect(()=>{
+    let live = true;
+    const loadQr = async () => {
+      if (!sel?.name) {
+        if (live) {
+          setActiveQr(null);
+          setQrImageUrl("");
+        }
+        return;
+      }
+
+      try {
+        const audience = initialSession?.studentType || "all";
+        const qr = await apiGet<ActiveQrCode | null>(`qr/active?batch=${encodeURIComponent(sel.name)}&audience=${encodeURIComponent(audience)}`);
+        if (!live) return;
+        setActiveQr(qr);
+
+        const upiId = qr?.upi_id || "anandamayi@upi";
+        const qrAmount = Number(qr?.amount || sel.fee || 0);
+        const upiLink = buildUpiPaymentLink({
+          upiId,
+          amount: qrAmount,
+          batchName: sel.name,
+        });
+        const dataUrl = await QRCode.toDataURL(upiLink, {
+          width: 320,
+          margin: 1,
+          color: { dark: "#3D0A12", light: "#FFFFFF" },
+        });
+        if (live) setQrImageUrl(dataUrl);
+      } catch {
+        if (!live) return;
+        setActiveQr(null);
+        setQrImageUrl("");
+      }
+    };
+
+    loadQr();
+    return () => {
+      live = false;
+    };
+  },[initialSession?.studentType, sel]);
 
   const handleSubmit=async()=>{
     if(!sel||!form.name||!form.phone){alert("Please select a batch and fill required fields.");return;}
@@ -891,21 +939,27 @@ function PaymentSection({ initialSession, batches }:{ initialSession:StudentSess
     setSubmitted(true);
   };
 
+  const upiId = activeQr?.upi_id || "anandamayi@upi";
+  const payableAmount = Number(activeQr?.amount || sel?.fee || 0);
+  const upiPaymentLink = sel
+    ? buildUpiPaymentLink({ upiId, amount: payableAmount, batchName: sel.name })
+    : "";
+
   if(submitted) return (
     <section style={{paddingTop:108,paddingBottom:80,textAlign:"center",background:`linear-gradient(180deg,${C.sandLight},${C.cream})`,minHeight:"100vh",padding:"108px 1rem 80px"}}>
       <div style={{maxWidth:520,margin:"0 auto"}}>
         <div style={{width:88,height:88,borderRadius:"50%",border:`2px solid ${C.maroon}38`,background:`${C.maroon}0c`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px"}}>
           <Heart size={36} style={{color:C.maroon}}/>
         </div>
-        <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:30,color:C.maroon,marginBottom:4}}>చెల్లింపు స్వీకరించబడింది</h2>
-        <p style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:14,color:C.maroonLight,marginBottom:16}}>Payment Received Successfully</p>
+        <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:30,color:C.maroon,marginBottom:4}}>Payment Received</h2>
+        <p style={{fontSize:14,color:C.maroonLight,marginBottom:16}}>Payment received successfully.</p>
         <OrnamentDivider/>
         <p style={{color:C.bronze,lineHeight:1.9,marginBottom:32,fontSize:14,fontFamily:"'Manrope','Segoe UI',sans-serif"}}>
-          ధన్యవాదాలు, <strong style={{color:C.deep}}>{form.name}</strong>!<br/>
-          ₹<strong style={{color:C.maroon}}>{sel?.fee?.toLocaleString()}</strong> for <strong style={{color:C.deep}}>{sel?.name}</strong> has been recorded. 🙏
+          Thank you, <strong style={{color:C.deep}}>{form.name}</strong>!<br/>
+          Rs. <strong style={{color:C.maroon}}>{sel?.fee?.toLocaleString()}</strong> for <strong style={{color:C.deep}}>{sel?.name}</strong> has been recorded.
         </p>
         <Button onClick={()=>{setSubmitted(false);setSel(null);setForm({name:"",accountName:"",phone:"",email:"",batch:"",transactionId:""}); }} style={{background:`linear-gradient(135deg,${C.maroon},${C.maroonMid})`,color:C.cream,border:"none",borderRadius:2,fontFamily:"'DM Serif Display',serif",letterSpacing:"0.12em",fontSize:13,padding:"10px 28px",cursor:"pointer"}}>
-          మళ్ళీ చెల్లించండి · New Payment
+          New Payment
         </Button>
       </div>
     </section>
@@ -918,9 +972,9 @@ function PaymentSection({ initialSession, batches }:{ initialSession:StudentSess
           <div style={{display:"flex",justifyContent:"center",gap:24,marginBottom:12,opacity:0.6}}>
             <KuchipudiIcon size={38} color={C.maroon}/><BharatanatyamIcon size={38} color={C.maroon}/>
           </div>
-          <p style={{fontSize:9,letterSpacing:"0.5em",color:C.bronze,textTransform:"uppercase",marginBottom:6}}>చెల్లింపు · Secure Payment</p>
+          <p style={{fontSize:9,letterSpacing:"0.5em",color:C.bronze,textTransform:"uppercase",marginBottom:6}}>Secure Payment</p>
           <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(2rem,5vw,2.8rem)",color:C.deep}}>Course <span style={{color:C.maroon}}>Fee Payment</span></h2>
-          <p style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:13,color:C.maroonLight,marginTop:4}}>కోర్సు ఫీజు చెల్లింపు</p>
+          <p style={{fontSize:13,color:C.maroonLight,marginTop:4}}>Complete your course fee payment.</p>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(228px,1fr))",gap:10,marginBottom:32}}>
           {batches.map(b=>{const s=sel?.id===b.id;return(
@@ -930,8 +984,8 @@ function PaymentSection({ initialSession, batches }:{ initialSession:StudentSess
               </div>
               <div>
                 <p style={{fontFamily:"'DM Serif Display',serif",fontSize:12,color:s?C.deep:C.bronze}}>{b.name}</p>
-                <p style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:10,color:C.maroonLight}}>{b.teluguName}</p>
-                <p style={{fontFamily:"'DM Serif Display',serif",fontSize:20,fontWeight:700,color:s?C.maroon:C.bronzeLight,lineHeight:1.2}}>₹{b.fee.toLocaleString()}</p>
+                <p style={{fontSize:10,color:C.maroonLight}}>{b.mode} - {b.schedule}</p>
+                <p style={{fontFamily:"'DM Serif Display',serif",fontSize:20,fontWeight:700,color:s?C.maroon:C.bronzeLight,lineHeight:1.2}}>Rs. {b.fee.toLocaleString()}</p>
               </div>
               {s&&<CheckCircle2 size={15} style={{color:C.maroon,marginLeft:"auto"}}/>}
             </button>
@@ -942,11 +996,11 @@ function PaymentSection({ initialSession, batches }:{ initialSession:StudentSess
             <Card style={{background:C.white,border:`1.5px solid ${C.maroon}18`,borderRadius:4}}>
               <CardHeader style={{paddingBottom:8}}>
                 <CardTitle style={{fontFamily:"'DM Serif Display',serif",color:C.maroon,fontSize:17,display:"flex",alignItems:"center",gap:8}}>
-                  <FileText size={15} style={{color:C.maroonLight}}/>వివరాలు · Student Details
+                  <FileText size={15} style={{color:C.maroonLight}}/>Student Details
                 </CardTitle>
               </CardHeader>
               <CardContent style={{display:"flex",flexDirection:"column",gap:14}}>
-                {([["విద్యార్థి పేరు · Name *","name","text"],["Account Holder Name *","accountName","text"],["Phone · ఫోన్ *","phone","tel"],["Transaction ID","transactionId","text"]] as [string,keyof FormData,string][]).map(([label,key,type])=>(
+                {([["Student Name *","name","text"],["Account Holder Name *","accountName","text"],["Phone *","phone","tel"],["Transaction ID","transactionId","text"]] as [string,keyof FormData,string][]).map(([label,key,type])=>(
                   <div key={key}>
                     <Label style={{fontSize:9,letterSpacing:"0.28em",color:C.bronze,textTransform:"uppercase"}}>{label}</Label>
                     <Input type={type} value={form[key]} onChange={e=>setForm(f=>({...f,[key]:e.target.value}))} style={{marginTop:3,height:36,background:C.sandLight,border:`1px solid ${C.maroon}22`,borderRadius:2,color:C.deep,fontSize:13}}/>
@@ -955,11 +1009,11 @@ function PaymentSection({ initialSession, batches }:{ initialSession:StudentSess
                 <div>
                   <Label style={{fontSize:9,letterSpacing:"0.28em",color:C.bronze,textTransform:"uppercase"}}>Batch</Label>
                   <div style={{marginTop:3,padding:"8px 12px",background:`${C.maroon}07`,border:`1px solid ${C.maroon}1e`,borderRadius:2,fontFamily:"'DM Serif Display',serif",color:C.maroon,fontSize:13,display:"flex",justifyContent:"space-between"}}>
-                    <span>{sel.name} / {sel.teluguName}</span><span style={{fontWeight:700}}>₹{sel.fee.toLocaleString()}</span>
+                    <span>{sel.name}</span><span style={{fontWeight:700}}>Rs. {sel.fee.toLocaleString()}</span>
                   </div>
                 </div>
                 <Button onClick={handleSubmit} disabled={loading} style={{height:40,background:`linear-gradient(135deg,${C.maroon},${C.maroonMid})`,color:C.cream,border:"none",borderRadius:2,fontFamily:"'DM Serif Display',serif",letterSpacing:"0.12em",fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-                  {loading?<Loader2 size={14} style={{animation:"spin 1s linear infinite"}}/>:<CreditCard size={14}/>}చెల్లింపు నిర్ధారించండి · Confirm
+                  {loading?<Loader2 size={14} style={{animation:"spin 1s linear infinite"}}/>:<CreditCard size={14}/>}Confirm Payment
                 </Button>
                 {error&&<p style={{fontSize:12,color:C.maroon}}>{error}</p>}
               </CardContent>
@@ -967,34 +1021,32 @@ function PaymentSection({ initialSession, batches }:{ initialSession:StudentSess
             <Card style={{background:C.white,border:`1.5px solid ${C.maroon}18`,borderRadius:4,textAlign:"center"}}>
               <CardHeader style={{paddingBottom:8}}>
                 <CardTitle style={{fontFamily:"'DM Serif Display',serif",color:C.maroon,fontSize:17,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                  <CreditCard size={15} style={{color:C.maroonLight}}/>స్కాన్ & చెల్లించండి
+                  <CreditCard size={15} style={{color:C.maroonLight}}/>Scan & Pay
                 </CardTitle>
               </CardHeader>
               <CardContent style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
-                <div style={{width:168,height:168,background:"#fff",border:`2px solid ${C.maroon}22`,borderRadius:3,display:"flex",alignItems:"center",justifyContent:"center",marginBottom:14,boxShadow:`0 2px 12px ${C.maroon}10`}}>
-                  <svg viewBox="0 0 100 100" width="148" height="148">
-                    <rect x={5} y={5} width={36} height={36} fill="none" stroke={C.deep} strokeWidth={3}/>
-                    <rect x={60} y={5} width={36} height={36} fill="none" stroke={C.deep} strokeWidth={3}/>
-                    <rect x={5} y={60} width={36} height={36} fill="none" stroke={C.deep} strokeWidth={3}/>
-                    <rect x={12} y={12} width={22} height={22} fill={C.deep}/>
-                    <rect x={67} y={12} width={22} height={22} fill={C.deep}/>
-                    <rect x={12} y={67} width={22} height={22} fill={C.deep}/>
-                    {[0,1,2,3,4,5,6,7,8].map(r=>[0,1,2,3,4,5,6,7,8].map(c=>{
-                      if((r<3&&c<3)||(r<3&&c>5)||(r>5&&c<3))return null;
-                      return Math.sin(r*17.3+c*11.7)>0?<rect key={`${r}-${c}`} x={c*11+5} y={r*11+5} width={8} height={8} fill={C.deep} rx={0.5}/>:null;
-                    }))}
-                  </svg>
+                <div style={{width:168,height:168,background:"#fff",border:`2px solid ${C.maroon}22`,borderRadius:3,display:"flex",alignItems:"center",justifyContent:"center",marginBottom:14,boxShadow:`0 2px 12px ${C.maroon}10`,overflow:"hidden"}}>
+                  {qrImageUrl ? (
+                    <img src={qrImageUrl} alt="UPI payment QR" style={{width:"100%",height:"100%",objectFit:"contain"}} />
+                  ) : (
+                    <div style={{fontSize:12,color:C.bronze}}>Preparing QR...</div>
+                  )}
                 </div>
                 <p style={{fontSize:9,letterSpacing:"0.4em",color:C.bronze,textTransform:"uppercase",marginBottom:2}}>UPI ID</p>
-                <p style={{fontFamily:"'DM Serif Display',serif",color:C.maroon,fontSize:14,marginBottom:12}}>anandamayi@upi</p>
+                <p style={{fontFamily:"'DM Serif Display',serif",color:C.maroon,fontSize:14,marginBottom:12}}>{upiId}</p>
                 <div style={{width:"100%",background:`${C.maroon}07`,border:`1px solid ${C.maroon}18`,borderRadius:3,padding:"14px"}}>
-                  <p style={{color:C.bronze,fontSize:11,marginBottom:2}}>చెల్లించవలసిన మొత్తం · Amount</p>
-                  <p style={{fontFamily:"'DM Serif Display',serif",fontSize:42,fontWeight:700,color:C.maroon,lineHeight:1}}>₹{sel.fee.toLocaleString()}</p>
-                  <p style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:12,color:C.maroonLight,marginTop:3}}>{sel.teluguName}</p>
+                  <p style={{color:C.bronze,fontSize:11,marginBottom:2}}>Amount</p>
+                  <p style={{fontFamily:"'DM Serif Display',serif",fontSize:42,fontWeight:700,color:C.maroon,lineHeight:1}}>Rs. {payableAmount.toLocaleString()}</p>
+                  <p style={{fontSize:12,color:C.maroonLight,marginTop:3}}>{sel.mode} - {sel.schedule}</p>
                 </div>
+                <a href={upiPaymentLink} style={{marginTop:12,width:"100%",textDecoration:"none"}}>
+                  <Button style={{width:"100%",height:38,background:C.white,color:C.maroon,border:`1px solid ${C.maroon}30`,borderRadius:2,fontFamily:"'DM Serif Display',serif",letterSpacing:"0.08em",fontSize:12,cursor:"pointer"}}>
+                    Open UPI App
+                  </Button>
+                </a>
                 <div style={{marginTop:12,display:"flex",alignItems:"flex-start",gap:6,fontSize:11,color:C.bronze,textAlign:"left"}}>
                   <AlertCircle size={11} style={{flexShrink:0,marginTop:1,color:C.maroonLight}}/>
-                  <span>చెల్లింపు తర్వాత Transaction ID నమోదు చేయండి · Enter Transaction ID after payment</span>
+                  <span>Scanning this QR or opening the UPI app will prefill the exact batch amount automatically.</span>
                 </div>
               </CardContent>
             </Card>
@@ -1005,13 +1057,13 @@ function PaymentSection({ initialSession, batches }:{ initialSession:StudentSess
   );
 }
 
-// ── Contact ───────────────────────────────────────────────────────────────────
+// -- Contact -------------------------------------------------------------------
 function ContactSection() {
   const items=[
-    {Icon:MapPin,title:"Location · చిరునామా",detail:"Anandamayi Nrutyala\nHyderabad, Telangana",te:"హైదరాబాద్, తెలంగాణ"},
-    {Icon:Phone,title:"Phone · ఫోన్",detail:"+91 98765 43210",te:"సోమ–శని · 9AM–7PM"},
-    {Icon:Mail,title:"Email · ఇమెయిల్",detail:"info@anandamayi.in\nadmissions@anandamayi.in",te:""},
-    {Icon:MessageCircle,title:"DM · సందేశం",detail:"@anandamayi_dance\nInstagram · WhatsApp",te:""},
+    {Icon:MapPin,title:"Location � ????????",detail:"Anandamayi Nrutyalaya\nHyderabad, Telangana",te:"?????????, ???????"},
+    {Icon:Phone,title:"Phone � ????",detail:"instagram.com/anandamayinrityalaya",te:"???�??? � 9AM�7PM"},
+    {Icon:Mail,title:"Email � ???????",detail:"info@anandamayi.in\nadmissions@anandamayi.in",te:""},
+    {Icon:MessageCircle,title:"DM � ??????",detail:"@anandamayi_dance\nInstagram � WhatsApp",te:""},
   ];
   return (
     <section style={{paddingTop:108,paddingBottom:80,padding:"108px 1rem 80px",background:`linear-gradient(180deg,${C.sandLight},${C.cream})`,minHeight:"100vh"}}>
@@ -1020,12 +1072,12 @@ function ContactSection() {
           <div style={{display:"flex",justifyContent:"center",gap:24,marginBottom:14,opacity:0.6}}>
             <BharatanatyamIcon size={42} color={C.maroon}/><KuchipudiIcon size={42} color={C.maroon}/>
           </div>
-          <p style={{fontSize:9,letterSpacing:"0.5em",color:C.bronze,textTransform:"uppercase",marginBottom:6}}>సంప్రదించండి · Get in Touch</p>
+          <p style={{fontSize:9,letterSpacing:"0.5em",color:C.bronze,textTransform:"uppercase",marginBottom:6}}>???????????? � Get in Touch</p>
           <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(2rem,5vw,2.8rem)",color:C.deep}}>Contact <span style={{color:C.maroon}}>Us</span></h2>
-          <p style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:13,color:C.maroonLight,marginTop:4}}>మమ్మల్ని సంప్రదించండి</p>
+          <p style={{fontSize:13,color:C.maroonLight,marginTop:4}}>Visit, message, or email Anandamayi Nrutyalayaya in Nagole, Hyderabad.</p>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:14,marginBottom:44}}>
-          {items.map(({Icon:I,title,detail,te})=>(
+          {items.map(({Icon:I,title,detail})=>(
             <Card key={title} style={{background:C.white,border:`1.5px solid ${C.maroon}14`,borderRadius:4,textAlign:"center",transition:"all 0.22s",cursor:"default"}}
               onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.transform="translateY(-3px)";(e.currentTarget as HTMLElement).style.boxShadow=`0 8px 24px ${C.maroon}12`;}}
               onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.transform="";(e.currentTarget as HTMLElement).style.boxShadow="";}}>
@@ -1033,7 +1085,7 @@ function ContactSection() {
                 <div style={{width:40,height:40,borderRadius:3,border:`1px solid ${C.maroon}22`,background:C.parchment,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 12px"}}><I size={18} style={{color:C.maroon}}/></div>
                 <p style={{fontFamily:"'DM Serif Display',serif",color:C.maroon,fontSize:12,marginBottom:4}}>{title}</p>
                 <p style={{color:C.bronze,fontSize:12,lineHeight:1.75,whiteSpace:"pre-line"}}>{detail}</p>
-                {te&&<p style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:11,color:C.maroonLight,marginTop:3}}>{te}</p>}
+                
               </CardContent>
             </Card>
           ))}
@@ -1045,18 +1097,17 @@ function ContactSection() {
             <NatarajaLogo size={60} color={C.maroon}/>
             <KuchipudiIcon size={50} color={C.maroon}/>
           </div>
-          <p style={{fontFamily:"'DM Serif Display',serif",color:C.maroon,fontSize:20,marginBottom:4}}>Anandamayi Nrutyala</p>
-          <p style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:16,color:C.maroonLight,marginBottom:8}}>ఆనందమయి నృత్యాల</p>
-          <OrnamentDivider/>
-          <p style={{fontStyle:"italic",color:C.bronze,fontSize:13,fontFamily:"'Manrope','Segoe UI',sans-serif",marginTop:8}}>Where every step is a prayer, every movement a devotion.</p>
-          <p style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:12,color:C.maroonLight,marginTop:4}}>ప్రతి అడుగూ ప్రార్థన, ప్రతి కదలికా భక్తి.</p>
+          <p style={{fontFamily:"'DM Serif Display',serif",color:C.maroon,fontSize:20,marginBottom:4}}>Anandamayi Nrutyalaya</p>
+                    <OrnamentDivider/>
+          <p style={{fontStyle:"italic",color:C.bronze,fontSize:13,fontFamily:"'Manrope','Segoe UI',sans-serif",marginTop:8}}>Thank you for being a part of Anandamayi Nrutyalaya.</p>
+          <p style={{fontSize:12,color:C.maroonLight,marginTop:4}}>Every step carries devotion, discipline, and joy.</p>
         </div>
       </div>
     </section>
   );
 }
 
-// ── Root ──────────────────────────────────────────────────────────────────────
+// -- Root ----------------------------------------------------------------------
 export default function App() {
   const [activeTab,setActiveTab]=useState<Tab>("Home");
   const [regBatch,setRegBatch]=useState<Batch|null>(null);
@@ -1117,12 +1168,11 @@ export default function App() {
       <footer style={{borderTop:`1px solid ${C.maroon}16`,padding:"20px 1rem",textAlign:"center",background:C.parchment}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,marginBottom:4}}>
           <BharatanatyamIcon size={18} color={C.maroon}/>
-          <span style={{fontSize:9,letterSpacing:"0.4em",color:`${C.maroon}55`,textTransform:"uppercase",fontFamily:"'DM Serif Display',serif"}}>Anandamayi · ఆనందమయి · Bharatanatyam · Kuchipudi</span>
+          <span style={{fontSize:9,letterSpacing:"0.4em",color:`${C.maroon}55`,textTransform:"uppercase",fontFamily:"'DM Serif Display',serif"}}>Anandamayi � ??????? � Bharatanatyam � Kuchipudi</span>
           <KuchipudiIcon size={18} color={C.maroon}/>
         </div>
-        <p style={{fontSize:10,color:`${C.maroon}40`}}>© {new Date().getFullYear()} Anandamayi Nrutyala · All rights reserved</p>
+        <p style={{fontSize:10,color:`${C.maroon}40`}}>� {new Date().getFullYear()} Anandamayi Nrutyalaya � All rights reserved</p>
       </footer>
     </div>
   );
 }
-
