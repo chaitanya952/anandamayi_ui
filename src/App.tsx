@@ -203,7 +203,7 @@ const Corner = ({ flip=false }:{flip?:boolean}) => (
 // -- Data ----------------------------------------------------------------------
 export const FALLBACK_BATCHES: Batch[] = [
   { id:1, name:"Online Weekend", teluguName:"???????? ???????", fee:2500, Icon:Monitor,   schedule:"Sat & Sun",     time:"10:00 AM � 12:00 PM", mode:"Online",        tag:"Popular",       danceIcon:<BharatanatyamIcon size={30}/> },
-  { id:2, name:"Online Weekday", teluguName:"???????? ???????",  fee:2500, Icon:Globe,     schedule:"Mon � Fri",     time:"7:00 PM � 8:30 PM",   mode:"Online",        tag:"Flexible",      danceIcon:<KuchipudiIcon size={30}/> },
+  { id:2, name:"Online Weekday", teluguName:"???????? ???????",  fee:2500, Icon:Globe,     schedule:"Mon, Fri",     time:"7:00 PM � 8:30 PM",   mode:"Online",        tag:"Flexible",      danceIcon:<KuchipudiIcon size={30}/> },
   { id:3, name:"Traya Abroad",   teluguName:"???? ??????",        fee:5000, Icon:Plane,     schedule:"Flexible",      time:"By Schedule",         mode:"Hybrid",        tag:"Premium",       danceIcon:<BharatanatyamIcon size={30}/> },
   { id:4, name:"Traya India",    teluguName:"???? ?????",          fee:3200, Icon:MapPin,    schedule:"Tue, Thu, Sat", time:"6:00 PM � 8:00 PM",   mode:"Offline",       tag:"Intensive",     danceIcon:<KuchipudiIcon size={30}/> },
   { id:5, name:"Offline",        teluguName:"????????",            fee:1500, Icon:Building2, schedule:"Mon, Wed, Fri", time:"5:00 PM � 7:00 PM",   mode:"In-Person",     tag:"Best Value",    danceIcon:<BharatanatyamIcon size={30}/> },
@@ -305,7 +305,7 @@ function OrnamentDivider() {
 }
 
 // -- Navbar --------------------------------------------------------------------
-const TABS: Tab[] = ["Home","Batches","Register","Payment","Contact"];
+const TABS: Tab[] = ["Home","Batches","Register","Contact"];
 
 function NavBar({ active, set }:{active:Tab;set:(t:Tab)=>void}) {
   const [open, setOpen] = useState(false);
@@ -516,7 +516,7 @@ function BatchesSection({onRegister,batches}:{onRegister:(b:Batch)=>void;batches
         {sel&&(
           <div style={{display:"flex",justifyContent:"center"}}>
             <Button onClick={()=>onRegister(sel)} style={{background:`linear-gradient(135deg,${C.maroon},${C.maroonMid})`,color:C.cream,fontFamily:"'DM Serif Display',serif",letterSpacing:"0.14em",fontSize:13,fontWeight:700,padding:"14px 42px",borderRadius:999,border:"none",boxShadow:`0 10px 24px ${C.maroon}32`,cursor:"pointer"}}>
-              {sel.teluguName} ???? ????? � Register for {sel.name} <ChevronRight size={15} style={{marginLeft:6}}/>
+               Register for {sel.name} <ChevronRight size={15} style={{marginLeft:6}}/>
             </Button>
           </div>
         )}
@@ -568,10 +568,10 @@ function ChatBot({
   const handleBatchSelect = useCallback((b:Batch)=>{
     setError("");
     setBatch(b);setForm(f=>({...f,batch:b.name}));
-    add(`${b.teluguName} � ${b.name} (?${b.fee.toLocaleString()})`, "user");
+    add(`${b.teluguName} ${b.name} (?${b.fee.toLocaleString()})`, "user");
     setTimeout(()=>{
       add(`${b.name} / ${b.teluguName} ???????:\n\n?? Schedule: ${b.schedule}\n? Timing: ${b.time}\n?? Fee: ?${b.fee.toLocaleString()}\n?? Mode: ${b.mode}`);
-      setTimeout(()=>{add("?????? ?? ???????? ?????? � Please review our guidelines:","bot","guidelines");setStep("guidelines");},900);
+      setTimeout(()=>{add(" Please review our guidelines:","bot","guidelines");setStep("guidelines");},900);
     },600);
   }, [add]);
 
@@ -588,7 +588,7 @@ function ChatBot({
     setAgreed(false);
     timers.push(setTimeout(()=>add("?? ??????! Anandamayi Nrutyalaya ?? ???????!\nWelcome! I'm here to guide you through registration."),300));
     timers.push(setTimeout(()=>{
-      add("???? ?????? ?????? ????????? � Please choose your batch:","bot","batch_picker");
+      add(" Please choose your batch:","bot","batch_picker");
       setStep("batch_select");
       if (initialBatch) {
         timers.push(setTimeout(()=>handleBatchSelect(initialBatch),200));
@@ -600,7 +600,7 @@ function ChatBot({
 
   const handleAgree=()=>{
     setAgreed(true);
-    add("???? ????? Payment Received?? � I agree to all guidelines.","user");
+    add("???? ????? Payment Received??  I agree to all guidelines.","user");
     setTimeout(()=>add("Are you a new student or an existing student?","bot","student_type"),500);
     setStep("student_type");
   };
@@ -644,7 +644,7 @@ function ChatBot({
           <CardContent style={{padding:0}}>
             <div style={{padding:"10px 18px",borderBottom:`1px solid ${C.maroon}10`,background:`${C.parchment}55`,display:"flex",alignItems:"center",gap:10}}>
               <div style={{width:8,height:8,borderRadius:"50%",background:C.maroon,opacity:0.7,animation:"pulse 2s infinite"}}/>
-              <span style={{fontSize:10,letterSpacing:"0.28em",color:C.maroonLight,textTransform:"uppercase",fontFamily:"'DM Serif Display',serif",flex:1}}>Live Registration � ?????? ?????</span>
+              <span style={{fontSize:10,letterSpacing:"0.28em",color:C.maroonLight,textTransform:"uppercase",fontFamily:"'DM Serif Display',serif",flex:1}}>Live Registration </span>
               {floating&&<button onClick={()=>setOpen(false)} style={{background:"none",border:"none",color:C.maroon,cursor:"pointer"}}><X size={16}/></button>}
             </div>
             <ScrollArea style={{height:470,padding:"18px"}}>
@@ -670,7 +670,7 @@ function ChatBot({
                     )}
                     {msg.extra==="guidelines"&&step==="guidelines"&&(
                       <div style={{marginTop:10,background:`${C.parchment}65`,border:`1px solid ${C.maroon}18`,borderRadius:4,padding:"14px 16px"}}>
-                        <p style={{fontSize:9,letterSpacing:"0.4em",color:C.bronze,textTransform:"uppercase",marginBottom:10,display:"flex",alignItems:"center",gap:6}}><BookOpen size={10} style={{color:C.maroon}}/>???????? � Guidelines</p>
+                        <p style={{fontSize:9,letterSpacing:"0.4em",color:C.bronze,textTransform:"uppercase",marginBottom:10,display:"flex",alignItems:"center",gap:6}}><BookOpen size={10} style={{color:C.maroon}}/>Guidelines</p>
                         <div style={{display:"flex",flexDirection:"column",gap:7,marginBottom:14}}>
                           {GUIDELINES.map((g,i)=>(
                             <div key={i} style={{display:"flex",gap:7,fontSize:12,color:C.deep,lineHeight:1.65,fontFamily:"'Manrope','Segoe UI',sans-serif"}}>
@@ -678,15 +678,15 @@ function ChatBot({
                             </div>
                           ))}
                         </div>
-                        {!agreed&&<Button onClick={handleAgree} size="sm" style={{background:`linear-gradient(135deg,${C.maroon},${C.maroonMid})`,color:C.cream,border:"none",borderRadius:2,fontFamily:"'DM Serif Display',serif",letterSpacing:"0.1em",fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",gap:5}}><CheckCircle2 size={11}/>????????????????? � I Agree</Button>}
+                        {!agreed&&<Button onClick={handleAgree} size="sm" style={{background:`linear-gradient(135deg,${C.maroon},${C.maroonMid})`,color:C.cream,border:"none",borderRadius:2,fontFamily:"'DM Serif Display',serif",letterSpacing:"0.1em",fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",gap:5}}><CheckCircle2 size={11}/> I Agree</Button>}
                       </div>
                     )}
                     {msg.extra==="student_type"&&step==="student_type"&&(
                       <div style={{marginTop:10,display:"flex",gap:10,flexWrap:"wrap"}}>
-                        <Button size="sm" onClick={()=>{setStudentType("new");add("New student registration","user");setTimeout(()=>{add("????? ???? � Registration Form:","bot","form");setStep("form");},400);}} style={{background:`linear-gradient(135deg,${C.maroon},${C.maroonMid})`,color:C.cream,border:"none",borderRadius:2,fontFamily:"'DM Serif Display',serif",letterSpacing:"0.1em",fontSize:11,cursor:"pointer"}}>
+                        <Button size="sm" onClick={()=>{setStudentType("new");add("New student registration","user");setTimeout(()=>{add(" Registration Form:","bot","form");setStep("form");},400);}} style={{background:`linear-gradient(135deg,${C.maroon},${C.maroonMid})`,color:C.cream,border:"none",borderRadius:2,fontFamily:"'DM Serif Display',serif",letterSpacing:"0.1em",fontSize:11,cursor:"pointer"}}>
                           New Student
                         </Button>
-                        <Button size="sm" onClick={()=>{setStudentType("existing");add("Existing student login","user");setTimeout(()=>{add("???? ???????? ????????? � Continue with your registered phone number.","bot","form");setStep("form");},400);}} style={{background:C.white,color:C.maroon,border:`1px solid ${C.maroon}35`,borderRadius:2,fontFamily:"'DM Serif Display',serif",letterSpacing:"0.1em",fontSize:11,cursor:"pointer"}}>
+                        <Button size="sm" onClick={()=>{setStudentType("existing");add("Existing student login","user");setTimeout(()=>{add(" Continue with your registered phone number.","bot","form");setStep("form");},400);}} style={{background:C.white,color:C.maroon,border:`1px solid ${C.maroon}35`,borderRadius:2,fontFamily:"'DM Serif Display',serif",letterSpacing:"0.1em",fontSize:11,cursor:"pointer"}}>
                           Existing Student
                         </Button>
                       </div>
@@ -694,8 +694,8 @@ function ChatBot({
                     {msg.extra==="form"&&step==="form"&&(
                       <div style={{marginTop:10,background:`${C.parchment}65`,border:`1px solid ${C.maroon}18`,borderRadius:4,padding:"14px 16px",display:"flex",flexDirection:"column",gap:10}}>
                         {([
-                          ...(studentType==="new" ? [["?????????? ???? � Name *","name","text"],["Email","email","email"]] : []),
-                          ["Phone � ???? *","phone","tel"],
+                          ...(studentType==="new" ? [[" Name *","name","text"],["Email","email","email"]] : []),
+                          ["Phone*","phone","tel"],
                         ] as [string,keyof FormData,string][]).map(([label,key,type])=>(
                           <div key={key}>
                             <Label style={{fontSize:9,letterSpacing:"0.28em",color:C.bronze,textTransform:"uppercase"}}>{label}</Label>
@@ -703,7 +703,7 @@ function ChatBot({
                           </div>
                         ))}
                         <div>
-                          <Label style={{fontSize:9,letterSpacing:"0.28em",color:C.bronze,textTransform:"uppercase"}}>????????? ?????? � Batch</Label>
+                          <Label style={{fontSize:9,letterSpacing:"0.28em",color:C.bronze,textTransform:"uppercase"}}>Batch</Label>
                           <div style={{marginTop:3,padding:"8px 12px",background:`${C.maroon}07`,border:`1px solid ${C.maroon}1e`,borderRadius:2,fontFamily:"'DM Serif Display',serif",color:C.maroon,fontSize:13,display:"flex",justifyContent:"space-between"}}>
                             <span>{batch?.name}</span><span style={{fontWeight:700}}>?{batch?.fee?.toLocaleString()}</span>
                           </div>
@@ -801,7 +801,7 @@ function RegisterSection({
     <section style={{paddingTop:108,paddingBottom:80,padding:"108px 1rem 80px",background:`linear-gradient(180deg,${C.sandLight},${C.cream})`,minHeight:"100vh",position:"relative"}}>
       <div style={{maxWidth:1100,margin:"0 auto"}}>
         <div style={{textAlign:"center",marginBottom:36}}>
-          <p style={{fontSize:9,letterSpacing:"0.5em",color:C.bronze,textTransform:"uppercase",marginBottom:6}}>Register � Login</p>
+          <p style={{fontSize:9,letterSpacing:"0.5em",color:C.bronze,textTransform:"uppercase",marginBottom:6}}>Register Login</p>
           <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(2rem,5vw,2.8rem)",color:C.deep}}>Student <span style={{color:C.maroon}}>Access</span></h2>
           <p style={{fontSize:13,color:C.maroonLight,marginTop:4}}>Continue with the standard form.</p>
         </div>
@@ -850,7 +850,7 @@ function RegisterSection({
                 <Input value={form.phone} onChange={e=>setForm(f=>({...f,phone:e.target.value}))} style={{marginTop:3,height:36,background:C.sandLight,border:`1px solid ${C.maroon}22`,borderRadius:2}}/>
               </div>
               <div style={{padding:"10px 12px",background:`${C.maroon}07`,border:`1px solid ${C.maroon}1e`,borderRadius:2,fontSize:13,color:C.maroon}}>
-                {selectedBatch ? `${selectedBatch.name} � ?${selectedBatch.fee.toLocaleString()}` : "Select a batch to continue"}
+                {selectedBatch ? `${selectedBatch.name} ${selectedBatch.fee.toLocaleString()}` : "Select a batch to continue"}
               </div>
               <Button onClick={submit} disabled={loading} style={{height:40,background:`linear-gradient(135deg,${C.maroon},${C.maroonMid})`,color:C.cream,border:"none",borderRadius:2,fontFamily:"'DM Serif Display',serif",letterSpacing:"0.12em",fontSize:13}}>
                 {loading?<Loader2 size={14} style={{animation:"spin 1s linear infinite"}}/>:<FileText size={14} style={{marginRight:6}}/>}
@@ -1079,10 +1079,10 @@ function PaymentSection({ initialSession, batches }:{ initialSession:StudentSess
 // -- Contact -------------------------------------------------------------------
 function ContactSection() {
   const items=[
-    {Icon:MapPin,title:"Location � ????????",detail:"Anandamayi Nrutyalaya\nHyderabad, Telangana",te:"?????????, ???????"},
-    {Icon:Phone,title:"Phone � ????",detail:"instagram.com/anandamayinrityalaya",te:"???�??? � 9AM�7PM"},
-    {Icon:Mail,title:"Email � ???????",detail:"info@anandamayi.in\nadmissions@anandamayi.in",te:""},
-    {Icon:MessageCircle,title:"DM � ??????",detail:"@anandamayi_dance\nInstagram � WhatsApp",te:""},
+    {Icon:MapPin,title:"Location ",detail:"Anandamayi Nrutyalaya\nHyderabad, Telangana",te:"9849299953"},
+    {Icon:Phone,title:"Phone ",detail:"instagram.com/anandamayinrityalaya",te:" 9AM7PM"},
+    {Icon:Mail,title:"Email ",detail:"info@anandamayi.in\nadmissions@anandamayi.in",te:""},
+    {Icon:MessageCircle,title:"DM",detail:"@anandamayi_dance\nInstagram  WhatsApp",te:""},
   ];
   return (
     <section style={{paddingTop:108,paddingBottom:80,padding:"108px 1rem 80px",background:`linear-gradient(180deg,${C.sandLight},${C.cream})`,minHeight:"100vh"}}>
@@ -1091,7 +1091,7 @@ function ContactSection() {
           <div style={{display:"flex",justifyContent:"center",gap:24,marginBottom:14,opacity:0.6}}>
             <BharatanatyamIcon size={42} color={C.maroon}/><KuchipudiIcon size={42} color={C.maroon}/>
           </div>
-          <p style={{fontSize:9,letterSpacing:"0.5em",color:C.bronze,textTransform:"uppercase",marginBottom:6}}>???????????? � Get in Touch</p>
+          <p style={{fontSize:9,letterSpacing:"0.5em",color:C.bronze,textTransform:"uppercase",marginBottom:6}}> Get in Touch</p>
           <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(2rem,5vw,2.8rem)",color:C.deep}}>Contact <span style={{color:C.maroon}}>Us</span></h2>
           <p style={{fontSize:13,color:C.maroonLight,marginTop:4}}>Visit, message, or email Anandamayi Nrutyalayaya in Nagole, Hyderabad.</p>
         </div>
@@ -1187,10 +1187,10 @@ export default function App() {
       <footer style={{borderTop:`1px solid ${C.maroon}16`,padding:"20px 1rem",textAlign:"center",background:C.parchment}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,marginBottom:4}}>
           <BharatanatyamIcon size={18} color={C.maroon}/>
-          <span style={{fontSize:9,letterSpacing:"0.4em",color:`${C.maroon}55`,textTransform:"uppercase",fontFamily:"'DM Serif Display',serif"}}>Anandamayi � ??????? � Bharatanatyam � Kuchipudi</span>
+          <span style={{fontSize:9,letterSpacing:"0.4em",color:`${C.maroon}55`,textTransform:"uppercase",fontFamily:"'DM Serif Display',serif"}}>Anandamayi  Bharatanatyam  Kuchipudi</span>
           <KuchipudiIcon size={18} color={C.maroon}/>
         </div>
-        <p style={{fontSize:10,color:`${C.maroon}40`}}>� {new Date().getFullYear()} Anandamayi Nrutyalaya � All rights reserved</p>
+        <p style={{fontSize:10,color:`${C.maroon}40`}}>� {new Date().getFullYear()} Anandamayi Nrutyalaya  All rights reserved</p>
       </footer>
     </div>
   );
