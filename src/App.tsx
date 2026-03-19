@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+﻿import { useState, useEffect, useRef, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import QRCode from "qrcode";
+import natarajImage from "@/assets/nataraj.png";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -284,7 +285,7 @@ function mapBatchFromApi(batch: BatchApi): Batch {
     fee: Number(batch.fee || 0),
     Icon: visuals.Icon,
     schedule: batch.days || "Schedule to be announced",
-    time: `${formatTimeLabel(batch.start_time)}${batch.end_time ? ` � ${formatTimeLabel(batch.end_time)}` : ""}`.trim(),
+    time: `${formatTimeLabel(batch.start_time)}${batch.end_time ? ` - ${formatTimeLabel(batch.end_time)}` : ""}`.trim(),
     mode: titleCase(batch.mode || "ONLINE"),
     tag: titleCase(batch.type || "POPULAR"),
     teacher: String(batch.trainer || "").trim(),
@@ -313,12 +314,16 @@ function NavBar({ active, set }:{active:Tab;set:(t:Tab)=>void}) {
       <div style={{maxWidth:1120,margin:"0 auto",padding:"0 1.25rem",display:"flex",alignItems:"center",justifyContent:"space-between",height:76,background:"linear-gradient(180deg, rgba(255,253,248,0.96), rgba(247,237,216,0.93))",backdropFilter:"blur(18px)",border:`1px solid ${C.maroon}18`,borderRadius:24,boxShadow:`0 14px 40px ${C.maroon}12`,pointerEvents:"auto"}}>
         {/* Brand */}
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <div style={{width:50,height:50,borderRadius:"50%",border:`1.5px solid ${C.maroon}32`,background:`radial-gradient(circle at 30% 30%, ${C.parchment}, ${C.cream})`,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:`inset 0 1px 0 rgba(255,255,255,0.75), 0 6px 16px ${C.maroon}12`}}>
-            <NatarajaLogo size={38} color={C.maroon}/>
+          <div style={{width:54,height:54,borderRadius:"50%",border:`1.5px solid ${C.maroon}32`,background:`radial-gradient(circle at 30% 30%, ${C.parchment}, ${C.cream})`,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:`inset 0 1px 0 rgba(255,255,255,0.75), 0 6px 16px ${C.maroon}12`,overflow:"hidden"}}>
+            <img
+              src={natarajImage}
+              alt="Nataraj"
+              style={{width:"82%",height:"82%",objectFit:"contain",filter:"drop-shadow(0 4px 8px rgba(61,10,18,0.18))"}}
+            />
           </div>
           <div>
             <div style={{fontFamily:"'DM Serif Display',serif",fontSize:18,fontWeight:400,color:C.maroon,letterSpacing:"0.12em",lineHeight:1}}>ANANDAMAYI</div>
-            <div style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:12,color:C.maroonLight,lineHeight:1.15}}>??????? ???????</div>
+            <div style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:12,color:C.maroonLight,lineHeight:1.15}}>Nrutyalaya</div>
             <div style={{fontSize:8,color:C.bronzeLight,letterSpacing:"0.42em",textTransform:"uppercase",fontWeight:700,marginTop:2}}>Dance Academy</div>
           </div>
         </div>
@@ -347,6 +352,20 @@ function NavBar({ active, set }:{active:Tab;set:(t:Tab)=>void}) {
 function HeroSection({ setTab }:{setTab:(t:Tab)=>void;batchCount:number}) {
   return (
     <section style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",position:"relative",overflow:"hidden",paddingTop:80,background:`linear-gradient(155deg,${C.sandLight} 0%,${C.parchment} 50%,${C.sand} 100%)`}}>
+      <div
+        style={{
+          position:"absolute",
+          inset:0,
+          pointerEvents:"none",
+          backgroundImage:`url(${natarajImage})`,
+          backgroundRepeat:"no-repeat",
+          backgroundPosition:"center 54%",
+          backgroundSize:"min(42vw, 420px)",
+          opacity:0.08,
+          filter:"sepia(1) hue-rotate(-18deg) saturate(1.3)",
+          mixBlendMode:"multiply",
+        }}
+      />
       {/* Mandala */}
       <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-52%)",pointerEvents:"none"}}>
         <MandalaBg size={620} op={0.09}/>
@@ -369,7 +388,7 @@ function HeroSection({ setTab }:{setTab:(t:Tab)=>void;batchCount:number}) {
         {/* Eyebrow */}
         <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:14,marginBottom:28}}>
           <div style={{height:1,width:44,background:`linear-gradient(to right,transparent,${C.maroon})`}}/>
-          <span style={{fontSize:9,letterSpacing:"0.5em",color:C.maroonLight,textTransform:"uppercase",fontFamily:"'DM Serif Display',serif"}}>Bharatanatyam ? Kuchipudi ? Classical Arts</span>
+          <span style={{fontSize:9,letterSpacing:"0.5em",color:C.maroonLight,textTransform:"uppercase",fontFamily:"'DM Serif Display',serif"}}>Bharatanatyam  Kuchipudi  Classical Arts</span>
           <div style={{height:1,width:44,background:`linear-gradient(to left,transparent,${C.maroon})`}}/>
         </div>
 
@@ -396,7 +415,7 @@ function HeroSection({ setTab }:{setTab:(t:Tab)=>void;batchCount:number}) {
           <Button onClick={()=>setTab("Register")} style={{background:`linear-gradient(135deg,${C.maroon},${C.maroonMid})`,color:C.cream,fontFamily:"'DM Serif Display',serif",letterSpacing:"0.14em",fontSize:13,fontWeight:700,padding:"12px 32px",borderRadius:2,border:"none",boxShadow:`0 4px 20px ${C.maroon}35`,cursor:"pointer",transition:"all 0.2s"}}
             onMouseEnter={e=>{(e.currentTarget as HTMLButtonElement).style.transform="translateY(-2px)";(e.currentTarget as HTMLButtonElement).style.boxShadow=`0 8px 28px ${C.maroon}45`;}}
             onMouseLeave={e=>{(e.currentTarget as HTMLButtonElement).style.transform="";(e.currentTarget as HTMLButtonElement).style.boxShadow=`0 4px 20px ${C.maroon}35`;}}>
-            ????? ?????? � Register <ChevronRight size={14} style={{marginLeft:4}}/>
+             Register <ChevronRight size={14} style={{marginLeft:4}}/>
           </Button>
           <Button onClick={()=>setTab("Batches")} style={{background:"transparent",color:C.maroon,border:`1.5px solid ${C.maroon}55`,fontFamily:"'DM Serif Display',serif",letterSpacing:"0.14em",fontSize:13,padding:"12px 32px",borderRadius:2,cursor:"pointer"}}
             onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.background=`${C.maroon}0e`}
@@ -471,18 +490,18 @@ function BatchesSection({onRegister,batches}:{onRegister:(b:Batch)=>void;batches
           <div style={{display:"flex",justifyContent:"center",gap:28,marginBottom:14,opacity:0.6}}>
             <BharatanatyamIcon size={44} color={C.maroon}/><KuchipudiIcon size={44} color={C.maroon}/>
           </div>
-          <p style={{fontSize:9,letterSpacing:"0.5em",color:C.bronze,textTransform:"uppercase",marginBottom:8}}>?????? ????????? � Choose Your Path</p>
+          <p style={{fontSize:9,letterSpacing:"0.5em",color:C.bronze,textTransform:"uppercase",marginBottom:8}}>Choose Your Path</p>
           <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(2rem,5vw,3rem)",color:C.deep}}>Our <span style={{color:C.maroon}}>Batches</span></h2>
                     <OrnamentDivider/>
           <p style={{color:C.bronze,maxWidth:480,margin:"0 auto",fontSize:13,lineHeight:1.8,fontFamily:"'Manrope','Segoe UI',sans-serif"}}>
-            Bharatanatyam � Kuchipudi � Classical Indian Dance<br/>
-            <span style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:12,color:C.maroonLight}}>????????? � ???????? � ????????? ??????</span>
+            Bharatanatyam - Kuchipudi - Classical Indian Dance<br/>
+            <span style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:12,color:C.maroonLight}}>Traditional - Graceful - Classical Dance</span>
           </p>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:12,marginBottom:28}}>
           {[
             {label:"Live Batches", value:String(batches.length)},
-            {label:"Starting Fee", value:`?${lowestFee.toLocaleString()}`},
+            {label:"Starting Fee", value:`Rs. ${lowestFee.toLocaleString()}`},
             {label:"Modes", value:Array.from(new Set(batches.map((b)=>b.mode))).length.toString()},
           ].map((item)=>(
             <div key={item.label} style={{background:`linear-gradient(135deg, ${C.white}, ${C.parchment})`,border:`1px solid ${C.maroon}16`,borderRadius:10,padding:"14px 16px",boxShadow:`0 8px 20px ${C.maroon}08`}}>
@@ -617,7 +636,7 @@ function ChatBot({
       {!floating&&(
         <div style={{textAlign:"center",marginBottom:28}}>
           <div style={{display:"flex",justifyContent:"center",marginBottom:10,opacity:0.65}}><BharatanatyamIcon size={40} color={C.maroon}/></div>
-          <p style={{fontSize:9,letterSpacing:"0.5em",color:C.bronze,textTransform:"uppercase",marginBottom:6}}>????? � Registration Portal</p>
+          <p style={{fontSize:9,letterSpacing:"0.5em",color:C.bronze,textTransform:"uppercase",marginBottom:6}}> Registration Portal</p>
           <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,color:C.deep}}>Join <span style={{color:C.maroon}}>Anandamayi Nrutyalayaya</span></h2>
                   </div>
       )}
