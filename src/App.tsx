@@ -247,7 +247,7 @@ function buildUpiPaymentLink({
 }) {
   const params = new URLSearchParams({
     pa: upiId,
-    pn: "Anandamayi Nrutyalaya",
+    pn: "Anandamayi Nrityalaya",
     tn: `${batchName} fee payment`,
     am: amount.toFixed(2),
     cu: "INR",
@@ -323,7 +323,7 @@ function NavBar({ active, set }:{active:Tab;set:(t:Tab)=>void}) {
           </div>
           <div>
             <div style={{fontFamily:"'DM Serif Display',serif",fontSize:18,fontWeight:400,color:C.maroon,letterSpacing:"0.12em",lineHeight:1}}>ANANDAMAYI</div>
-            <div style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:12,color:C.maroonLight,lineHeight:1.15}}>Nrutyalaya</div>
+            <div style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:12,color:C.maroonLight,lineHeight:1.15}}>Nrityalaya</div>
             <div style={{fontSize:8,color:C.bronzeLight,letterSpacing:"0.42em",textTransform:"uppercase",fontWeight:700,marginTop:2}}>Dance Academy</div>
           </div>
         </div>
@@ -388,21 +388,21 @@ function HeroSection({ setTab }:{setTab:(t:Tab)=>void;batchCount:number}) {
         {/* Eyebrow */}
         <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:14,marginBottom:28}}>
           <div style={{height:1,width:44,background:`linear-gradient(to right,transparent,${C.maroon})`}}/>
-          <span style={{fontSize:9,letterSpacing:"0.5em",color:C.maroonLight,textTransform:"uppercase",fontFamily:"'DM Serif Display',serif"}}>Bharatanatyam  Kuchipudi  Classical Arts</span>
+          <span style={{fontSize:9,letterSpacing:"0.5em",color:C.maroonLight,textTransform:"uppercase",fontFamily:"'DM Serif Display',serif"}}>Kuchipudi  Classical Arts</span>
           <div style={{height:1,width:44,background:`linear-gradient(to left,transparent,${C.maroon})`}}/>
         </div>
 
         {/* Telugu title */}
         
         <h1 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(3rem,8.5vw,6.5rem)",fontWeight:900,color:C.deep,lineHeight:1,marginBottom:4}}>
-          Anandamayi <span style={{color:C.maroon}}>Nrutyalaya</span>
+          Anandamayi <span style={{color:C.maroon}}>Nrityalaya</span>
         </h1>
 
         {/* Tagline with dance icons */}
         <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:20,margin:"16px 0 22px",flexWrap:"wrap"}}>
           <BharatanatyamIcon size={38} color={C.maroon}/>
           <div style={{textAlign:"center"}}>
-            <p style={{fontFamily:"'Manrope','Segoe UI',sans-serif",fontStyle:"italic",fontSize:"clamp(0.9rem,1.8vw,1.25rem)",color:C.bronze,letterSpacing:"0.1em"}}>A graceful home for Bharatanatyam and Kuchipudi.</p>
+            <p style={{fontFamily:"'Manrope','Segoe UI',sans-serif",fontStyle:"italic",fontSize:"clamp(0.9rem,1.8vw,1.25rem)",color:C.bronze,letterSpacing:"0.1em"}}>A graceful home for Kuchipudi.</p>
             
           </div>
           <KuchipudiIcon size={38} color={C.maroon}/>
@@ -494,7 +494,7 @@ function BatchesSection({onRegister,batches}:{onRegister:(b:Batch)=>void;batches
           <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(2rem,5vw,3rem)",color:C.deep}}>Our <span style={{color:C.maroon}}>Batches</span></h2>
                     <OrnamentDivider/>
           <p style={{color:C.bronze,maxWidth:480,margin:"0 auto",fontSize:13,lineHeight:1.8,fontFamily:"'Manrope','Segoe UI',sans-serif"}}>
-            Bharatanatyam - Kuchipudi - Classical Indian Dance<br/>
+            Kuchipudi - Classical Indian Dance<br/>
             <span style={{fontFamily:"'Noto Serif Telugu',serif",fontSize:12,color:C.maroonLight}}>Traditional - Graceful - Classical Dance</span>
           </p>
         </div>
@@ -586,7 +586,7 @@ function ChatBot({
     setMessages([]);
     setStep("welcome");
     setAgreed(false);
-    timers.push(setTimeout(()=>add("?? ??????! Anandamayi Nrutyalaya ?? ???????!\nWelcome! I'm here to guide you through registration."),300));
+    timers.push(setTimeout(()=>add("?? ??????! Anandamayi Nrityalaya ?? ???????!\nWelcome! I'm here to guide you through registration."),300));
     timers.push(setTimeout(()=>{
       add(" Please choose your batch:","bot","batch_picker");
       setStep("batch_select");
@@ -637,7 +637,7 @@ function ChatBot({
         <div style={{textAlign:"center",marginBottom:28}}>
           <div style={{display:"flex",justifyContent:"center",marginBottom:10,opacity:0.65}}><BharatanatyamIcon size={40} color={C.maroon}/></div>
           <p style={{fontSize:9,letterSpacing:"0.5em",color:C.bronze,textTransform:"uppercase",marginBottom:6}}> Registration Portal</p>
-          <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,color:C.deep}}>Join <span style={{color:C.maroon}}>Anandamayi Nrutyalayaya</span></h2>
+          <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,color:C.deep}}>Join <span style={{color:C.maroon}}>Anandamayi Nrityalayaya</span></h2>
                   </div>
       )}
       <Card style={{background:C.white,border:`1.5px solid ${C.maroon}18`,borderRadius:4,boxShadow:`0 4px 24px ${C.maroon}10`,width:"100%"}}>
@@ -1079,10 +1079,10 @@ function PaymentSection({ initialSession, batches }:{ initialSession:StudentSess
 // -- Contact -------------------------------------------------------------------
 function ContactSection() {
   const items=[
-    {Icon:MapPin,title:"Location ",detail:"Anandamayi Nrutyalaya\nHyderabad, Telangana",te:"9849299953"},
-    {Icon:Phone,title:"Phone ",detail:"instagram.com/anandamayinrityalaya",te:" 9AM7PM"},
-    {Icon:Mail,title:"Email ",detail:"info@anandamayi.in\nadmissions@anandamayi.in",te:""},
-    {Icon:MessageCircle,title:"DM",detail:"@anandamayi_dance\nInstagram  WhatsApp",te:""},
+    {Icon:MapPin,title:"Location",detail:"Anandamayi Nrityalaya\nHyderabad, Telangana\n9849299953"},
+    {Icon:Phone,title:"Instagram",detail:"https://www.instagram.com/anandamayi_nrityalaya?igsh=MWV3ZHNkdzZjZ3JxbA%3D%3D"},
+    {Icon:Mail,title:"Email",detail:"Anandamayinrityalaya@gmail.com"},
+    {Icon:MessageCircle,title:"DM",detail:"Instagram / WhatsApp"},
   ];
   return (
     <section style={{paddingTop:108,paddingBottom:80,padding:"108px 1rem 80px",background:`linear-gradient(180deg,${C.sandLight},${C.cream})`,minHeight:"100vh"}}>
@@ -1093,7 +1093,7 @@ function ContactSection() {
           </div>
           <p style={{fontSize:9,letterSpacing:"0.5em",color:C.bronze,textTransform:"uppercase",marginBottom:6}}> Get in Touch</p>
           <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(2rem,5vw,2.8rem)",color:C.deep}}>Contact <span style={{color:C.maroon}}>Us</span></h2>
-          <p style={{fontSize:13,color:C.maroonLight,marginTop:4}}>Visit, message, or email Anandamayi Nrutyalayaya in Nagole, Hyderabad.</p>
+          <p style={{fontSize:13,color:C.maroonLight,marginTop:4}}>Visit, message, or email Anandamayi Nrityalayaya in Nagole, Hyderabad.</p>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:14,marginBottom:44}}>
           {items.map(({Icon:I,title,detail})=>(
@@ -1116,9 +1116,9 @@ function ContactSection() {
             <NatarajaLogo size={60} color={C.maroon}/>
             <KuchipudiIcon size={50} color={C.maroon}/>
           </div>
-          <p style={{fontFamily:"'DM Serif Display',serif",color:C.maroon,fontSize:20,marginBottom:4}}>Anandamayi Nrutyalaya</p>
+          <p style={{fontFamily:"'DM Serif Display',serif",color:C.maroon,fontSize:20,marginBottom:4}}>Anandamayi Nrityalaya</p>
                     <OrnamentDivider/>
-          <p style={{fontStyle:"italic",color:C.bronze,fontSize:13,fontFamily:"'Manrope','Segoe UI',sans-serif",marginTop:8}}>Thank you for being a part of Anandamayi Nrutyalaya.</p>
+          <p style={{fontStyle:"italic",color:C.bronze,fontSize:13,fontFamily:"'Manrope','Segoe UI',sans-serif",marginTop:8}}>Thank you for being a part of Anandamayi Nrityalaya.</p>
           <p style={{fontSize:12,color:C.maroonLight,marginTop:4}}>Every step carries devotion, discipline, and joy.</p>
         </div>
       </div>
@@ -1187,10 +1187,10 @@ export default function App() {
       <footer style={{borderTop:`1px solid ${C.maroon}16`,padding:"20px 1rem",textAlign:"center",background:C.parchment}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,marginBottom:4}}>
           <BharatanatyamIcon size={18} color={C.maroon}/>
-          <span style={{fontSize:9,letterSpacing:"0.4em",color:`${C.maroon}55`,textTransform:"uppercase",fontFamily:"'DM Serif Display',serif"}}>Anandamayi  Bharatanatyam  Kuchipudi</span>
+          <span style={{fontSize:9,letterSpacing:"0.4em",color:`${C.maroon}55`,textTransform:"uppercase",fontFamily:"'DM Serif Display',serif"}}>Anandamayi  Kuchipudi</span>
           <KuchipudiIcon size={18} color={C.maroon}/>
         </div>
-        <p style={{fontSize:10,color:`${C.maroon}40`}}>� {new Date().getFullYear()} Anandamayi Nrutyalaya  All rights reserved</p>
+        <p style={{fontSize:10,color:`${C.maroon}40`}}>� {new Date().getFullYear()} Anandamayi Nrityalaya  All rights reserved</p>
       </footer>
     </div>
   );
