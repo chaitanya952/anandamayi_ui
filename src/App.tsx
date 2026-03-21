@@ -33,7 +33,7 @@ const C = {
 // -- Types ---------------------------------------------------------------------
 interface Batch {
   id: number; name: string; teluguName: string; fee: number;
-  Icon: React.ElementType; schedule: string; time: string;
+  Icon: React.ElementType; schedule: string;
   mode: string; tag: string; teacher?: string; danceIcon: React.ReactNode;
 }
 interface BatchApi {
@@ -202,12 +202,12 @@ const Corner = ({ flip=false }:{flip?:boolean}) => (
 
 // -- Data ----------------------------------------------------------------------
 export const FALLBACK_BATCHES: Batch[] = [
-  { id:1, name:"Online Weekend", teluguName:"???????? ???????", fee:2500, Icon:Monitor,   schedule:"Sat & Sun",     time:"10:00 AM � 12:00 PM", mode:"Online",        tag:"Popular",       danceIcon:<BharatanatyamIcon size={30}/> },
-  { id:2, name:"Online Weekday", teluguName:"???????? ???????",  fee:2500, Icon:Globe,     schedule:"Mon, Fri",     time:"7:00 PM � 8:30 PM",   mode:"Online",        tag:"Flexible",      danceIcon:<KuchipudiIcon size={30}/> },
-  { id:3, name:"Traya Abroad",   teluguName:"???? ??????",        fee:5000, Icon:Plane,     schedule:"Flexible",      time:"By Schedule",         mode:"Hybrid",        tag:"Premium",       danceIcon:<BharatanatyamIcon size={30}/> },
-  { id:4, name:"Traya India",    teluguName:"???? ?????",          fee:3200, Icon:MapPin,    schedule:"Tue, Thu, Sat", time:"6:00 PM � 8:00 PM",   mode:"Offline",       tag:"Intensive",     danceIcon:<KuchipudiIcon size={30}/> },
-  { id:5, name:"Offline",        teluguName:"????????",            fee:1500, Icon:Building2, schedule:"Mon, Wed, Fri", time:"5:00 PM � 7:00 PM",   mode:"In-Person",     tag:"Best Value",    danceIcon:<BharatanatyamIcon size={30}/> },
-  { id:6, name:"Abroad",         teluguName:"?????? ??????",       fee:4000, Icon:Globe,     schedule:"Weekends",      time:"As Scheduled",        mode:"International", tag:"International", danceIcon:<KuchipudiIcon size={30}/> },
+  { id:1, name:"Online Weekend", teluguName:"???????? ???????", fee:2500, Icon:Monitor,   schedule:"Sat & Sun",     mode:"Online",        tag:"Popular",       danceIcon:<BharatanatyamIcon size={30}/> },
+  { id:2, name:"Online Weekday", teluguName:"???????? ???????",  fee:2500, Icon:Globe,     schedule:"Mon, Fri",     mode:"Online",        tag:"Flexible",      danceIcon:<KuchipudiIcon size={30}/> },
+  { id:3, name:"Traya Abroad",   teluguName:"???? ??????",        fee:5000, Icon:Plane,     schedule:"Flexible",      mode:"Hybrid",        tag:"Premium",       danceIcon:<BharatanatyamIcon size={30}/> },
+  { id:4, name:"Traya India",    teluguName:"???? ?????",          fee:3200, Icon:MapPin,    schedule:"Tue, Thu, Sat", mode:"Offline",       tag:"Intensive",     danceIcon:<KuchipudiIcon size={30}/> },
+  { id:5, name:"Offline",        teluguName:"????????",            fee:1500, Icon:Building2, schedule:"Mon, Wed, Fri", mode:"In-Person",     tag:"Best Value",    danceIcon:<BharatanatyamIcon size={30}/> },
+  { id:6, name:"Abroad",         teluguName:"?????? ??????",       fee:4000, Icon:Globe,     schedule:"Weekends",      mode:"International", tag:"International", danceIcon:<KuchipudiIcon size={30}/> },
 ];
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
@@ -255,15 +255,6 @@ function buildUpiPaymentLink({
   return `upi://pay?${params.toString()}`;
 }
 
-function formatTimeLabel(value?: string) {
-  if (!value) return "";
-  const [hours, minutes] = value.split(":").map(Number);
-  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return value;
-  const suffix = hours >= 12 ? "PM" : "AM";
-  const normalized = hours % 12 || 12;
-  return `${normalized}:${String(minutes).padStart(2, "0")} ${suffix}`;
-}
-
 function titleCase(value: string) {
   return value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
 }
@@ -285,7 +276,6 @@ function mapBatchFromApi(batch: BatchApi): Batch {
     fee: Number(batch.fee || 0),
     Icon: visuals.Icon,
     schedule: batch.days || "Schedule to be announced",
-    time: `${formatTimeLabel(batch.start_time)}${batch.end_time ? ` - ${formatTimeLabel(batch.end_time)}` : ""}`.trim(),
     mode: titleCase(batch.mode || "ONLINE"),
     tag: titleCase(batch.type || "POPULAR"),
     teacher: String(batch.trainer || "").trim(),
