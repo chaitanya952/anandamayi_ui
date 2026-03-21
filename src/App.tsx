@@ -10,7 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import {
   Globe, Monitor, Plane, MapPin, Building2, Phone, Mail,
-  CheckCircle2, ChevronRight, Clock, Calendar, CreditCard,
+  CheckCircle2, ChevronRight, Calendar, CreditCard,
   Users, FileText, AlertCircle, Menu, X,
   Flower2, BookOpen, Heart, MessageCircle, Loader2, Sparkles
 } from "lucide-react";
@@ -460,9 +460,6 @@ function BatchCard({b,selected,onSelect}:{b:Batch;selected:boolean;onSelect:(x:B
             <Calendar size={11} style={{color:C.maroonLight}}/>{b.schedule}
           </div>
           <div style={{display:"flex",alignItems:"center",gap:8,fontSize:12,color:C.bronze,background:`${C.maroon}05`,border:`1px solid ${C.maroon}10`,borderRadius:8,padding:"9px 10px"}}>
-            <Clock size={11} style={{color:C.maroonLight}}/>{b.time}
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:8,fontSize:12,color:C.bronze,background:`${C.maroon}05`,border:`1px solid ${C.maroon}10`,borderRadius:8,padding:"9px 10px"}}>
             <Users size={11} style={{color:C.maroonLight}}/>{b.teacher || "Teacher will be announced"}
           </div>
         </div>
@@ -570,7 +567,7 @@ function ChatBot({
     setBatch(b);setForm(f=>({...f,batch:b.name}));
     add(`${b.teluguName} ${b.name} (?${b.fee.toLocaleString()})`, "user");
     setTimeout(()=>{
-      add(`${b.name} / ${b.teluguName} ???????:\n\n?? Schedule: ${b.schedule}\n? Timing: ${b.time}\n?? Fee: ?${b.fee.toLocaleString()}\n?? Mode: ${b.mode}`);
+      add(`${b.name} / ${b.teluguName} ???????:\n\n?? Schedule: ${b.schedule}\n?? Fee: ?${b.fee.toLocaleString()}\n?? Mode: ${b.mode}`);
       setTimeout(()=>{add(" Please review our guidelines:","bot","guidelines");setStep("guidelines");},900);
     },600);
   }, [add]);
