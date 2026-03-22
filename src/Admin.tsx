@@ -1089,7 +1089,7 @@ function ImportPage() {
 }
 
 // ── SETTINGS ──────────────────────────────────────────────────────────────────
-function SettingsPage() {
+export function LegacySettingsPage() {
   const [pwd, setPwd]   = useState({ current:"", newPw:"", confirm:"" });
   const [msg, setMsg]   = useState("");
   const [email, setEmail] = useState({ adminEmail:"", smtpUser:"", smtpPass:"" });
@@ -1137,6 +1137,126 @@ function SettingsPage() {
               <FormField label="SMTP Username" value={email.smtpUser} onChange={v=>setEmail(p=>({...p,smtpUser:v}))}/>
               <FormField label="SMTP App Password" value={email.smtpPass} onChange={v=>setEmail(p=>({...p,smtpPass:v}))} type="password"/>
               <Button onClick={handleEmailSave} style={{ width:"100%", height:38, background:`linear-gradient(135deg,${C.maroon},${C.maroonMid})`, color:C.cream, border:"none", borderRadius:3, fontSize:13, cursor:"pointer", marginTop:4 }}>Save Email Settings</Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SettingsPage() {
+  const [pwd, setPwd] = useState({ current:"", newPw:"", confirm:"" });
+  const [msg, setMsg] = useState("");
+  const [email, setEmail] = useState({ adminEmail:"", smtpUser:"", smtpPass:"" });
+  const [instagram, setInstagram] = useState({
+    instagramVerifyToken: "",
+    instagramPageAccessToken: "",
+    instagramGraphApiVersion: "v22.0",
+    instagramPaymentLink: "",
+    instagramRegistrationFormUrl: "",
+    instagramPrivacyPolicyUrl: "",
+    instagramFollowupNote: "30th of this month",
+  });
+
+  useEffect(() => {
+    apiFetch("/settings")
+      .then((data) => {
+        setEmail({
+          adminEmail: data.adminEmail || "",
+          smtpUser: data.smtpUser || "",
+          smtpPass: data.smtpPass || "",
+        });
+        setInstagram({
+          instagramVerifyToken: data.instagramVerifyToken || "ananadamayi_verify_token",
+          instagramPageAccessToken: data.instagramPageAccessToken || "",
+          instagramGraphApiVersion: data.instagramGraphApiVersion || "v22.0",
+          instagramPaymentLink: data.instagramPaymentLink || "",
+          instagramRegistrationFormUrl: data.instagramRegistrationFormUrl || "",
+          instagramPrivacyPolicyUrl: data.instagramPrivacyPolicyUrl || "",
+          instagramFollowupNote: data.instagramFollowupNote || "30th of this month",
+        });
+      })
+      .catch(() => {});
+  }, []);
+
+  const handlePwChange = async () => {
+    if (pwd.newPw !== pwd.confirm) {
+      setMsg("Passwords don't match.");
+      return;
+    }
+    try {
+      const d = await apiFetch("/admin/password", { method:"POST", body:JSON.stringify({ current:pwd.current, newPassword:pwd.newPw }) });
+      setMsg(d.ok ? "✓ Password updated successfully." : (d.message || "Failed."));
+    } catch {
+      setMsg("Failed.");
+    }
+  };
+
+  const handleEmailSave = async () => {
+    try {
+      await apiFetch("/admin/settings", { method:"PUT", body:JSON.stringify(email) });
+      setMsg("✓ Email settings saved.");
+    } catch {
+      setMsg("Failed.");
+    }
+  };
+
+  const handleInstagramSave = async () => {
+    try {
+      await apiFetch("/admin/settings", { method:"PUT", body:JSON.stringify(instagram) });
+      setMsg("✓ Instagram settings saved.");
+    } catch {
+      setMsg("Failed.");
+    }
+  };
+
+  const isSuccess = msg.startsWith("✓");
+
+  return (
+    <div style={{ display:"flex", flexDirection:"column", flex:1, overflow:"hidden" }}>
+      <TopBar title="Settings" subtitle="సెట్టింగులు"/>
+      <div style={{ flex:1, overflowY:"auto", padding:"24px" }}>
+        {msg && <div style={{ background: isSuccess ? "#dcf4e8" : "#fde8e8", border:`1px solid ${isSuccess ? "#aaddbb" : "#f0bbbb"}`, borderRadius:5, padding:"10px 16px", marginBottom:20, fontSize:13, color: isSuccess ? C.success : C.error }}>{msg}</div>}
+
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(360px,1fr))", gap:20 }}>
+          <Card style={{ background:C.white, border:`1.5px solid ${C.gray200}`, borderRadius:6 }}>
+            <CardHeader style={{ padding:"16px 20px 12px", borderBottom:`1px solid ${C.gray100}` }}>
+              <CardTitle style={{ fontFamily:"'DM Serif Display',serif", fontSize:15, color:C.deep }}>Change Password</CardTitle>
+            </CardHeader>
+            <CardContent style={{ padding:"20px" }}>
+              <FormField label="Current Password" value={pwd.current} onChange={v=>setPwd(p=>({...p,current:v}))} type="password"/>
+              <FormField label="New Password" value={pwd.newPw} onChange={v=>setPwd(p=>({...p,newPw:v}))} type="password"/>
+              <FormField label="Confirm New Password" value={pwd.confirm} onChange={v=>setPwd(p=>({...p,confirm:v}))} type="password"/>
+              <Button onClick={handlePwChange} style={{ width:"100%", height:38, background:`linear-gradient(135deg,${C.maroon},${C.maroonMid})`, color:C.cream, border:"none", borderRadius:3, fontSize:13, cursor:"pointer", marginTop:4 }}>Update Password</Button>
+            </CardContent>
+          </Card>
+
+          <Card style={{ background:C.white, border:`1.5px solid ${C.gray200}`, borderRadius:6 }}>
+            <CardHeader style={{ padding:"16px 20px 12px", borderBottom:`1px solid ${C.gray100}` }}>
+              <CardTitle style={{ fontFamily:"'DM Serif Display',serif", fontSize:15, color:C.deep }}>Email & Notifications</CardTitle>
+            </CardHeader>
+            <CardContent style={{ padding:"20px" }}>
+              <FormField label="Admin Email" value={email.adminEmail} onChange={v=>setEmail(p=>({...p,adminEmail:v}))} type="email"/>
+              <FormField label="SMTP Username" value={email.smtpUser} onChange={v=>setEmail(p=>({...p,smtpUser:v}))}/>
+              <FormField label="SMTP App Password" value={email.smtpPass} onChange={v=>setEmail(p=>({...p,smtpPass:v}))} type="password"/>
+              <Button onClick={handleEmailSave} style={{ width:"100%", height:38, background:`linear-gradient(135deg,${C.maroon},${C.maroonMid})`, color:C.cream, border:"none", borderRadius:3, fontSize:13, cursor:"pointer", marginTop:4 }}>Save Email Settings</Button>
+            </CardContent>
+          </Card>
+
+          <Card style={{ background:C.white, border:`1.5px solid ${C.gray200}`, borderRadius:6 }}>
+            <CardHeader style={{ padding:"16px 20px 12px", borderBottom:`1px solid ${C.gray100}` }}>
+              <CardTitle style={{ fontFamily:"'DM Serif Display',serif", fontSize:15, color:C.deep }}>Instagram Webhook Settings</CardTitle>
+            </CardHeader>
+            <CardContent style={{ padding:"20px" }}>
+              <FormField label="Verify Token" value={instagram.instagramVerifyToken} onChange={v=>setInstagram(p=>({...p,instagramVerifyToken:v}))}/>
+              <FormField label="Page Access Token" value={instagram.instagramPageAccessToken} onChange={v=>setInstagram(p=>({...p,instagramPageAccessToken:v}))} type="password"/>
+              <FormField label="Graph API Version" value={instagram.instagramGraphApiVersion} onChange={v=>setInstagram(p=>({...p,instagramGraphApiVersion:v}))}/>
+              <FormField label="Payment Link" value={instagram.instagramPaymentLink} onChange={v=>setInstagram(p=>({...p,instagramPaymentLink:v}))}/>
+              <FormField label="Registration Form URL" value={instagram.instagramRegistrationFormUrl} onChange={v=>setInstagram(p=>({...p,instagramRegistrationFormUrl:v}))}/>
+              <FormField label="Privacy Policy URL" value={instagram.instagramPrivacyPolicyUrl} onChange={v=>setInstagram(p=>({...p,instagramPrivacyPolicyUrl:v}))}/>
+              <FormField label="Follow-up Note" value={instagram.instagramFollowupNote} onChange={v=>setInstagram(p=>({...p,instagramFollowupNote:v}))}/>
+              <Button onClick={handleInstagramSave} style={{ width:"100%", height:38, background:`linear-gradient(135deg,${C.maroon},${C.maroonMid})`, color:C.cream, border:"none", borderRadius:3, fontSize:13, cursor:"pointer", marginTop:4 }}>Save Instagram Settings</Button>
             </CardContent>
           </Card>
         </div>
