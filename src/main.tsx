@@ -10,6 +10,7 @@ import '@fontsource/manrope/600.css'
 import '@fontsource/manrope/700.css'
 
 const isAdmin = window.location.pathname.startsWith('/admin')
+const isPrivacyPolicy = window.location.pathname.startsWith('/privacy-policy')
 
 async function bootstrap() {
   if (isAdmin) {
@@ -17,6 +18,13 @@ async function bootstrap() {
     createRoot(document.getElementById('root')!).render(
       <StrictMode>
         <AdminApp />
+      </StrictMode>
+    )
+  } else if (isPrivacyPolicy) {
+    const { default: PrivacyPolicy } = await import('./PrivacyPolicy')
+    createRoot(document.getElementById('root')!).render(
+      <StrictMode>
+        <PrivacyPolicy />
       </StrictMode>
     )
   } else {

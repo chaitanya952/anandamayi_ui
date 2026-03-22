@@ -934,7 +934,7 @@ function PaymentSection({ initialSession, batches }:{ initialSession:StudentSess
       studentId: initialSession?.studentId,
       phone: form.phone,
       amount: sel.fee,
-      transactionId: form.transactionId,
+      transactionId: form.transactionId.trim(),
       batch_name: sel.name,
     });
     setLoading(false);
@@ -942,6 +942,7 @@ function PaymentSection({ initialSession, batches }:{ initialSession:StudentSess
       setError(response.error || "Unable to confirm payment.");
       return;
     }
+    setError("");
     setSubmitted(true);
   };
 
@@ -1006,7 +1007,7 @@ function PaymentSection({ initialSession, batches }:{ initialSession:StudentSess
                 </CardTitle>
               </CardHeader>
               <CardContent style={{display:"flex",flexDirection:"column",gap:14}}>
-                {([["Student Name *","name","text"],["Account Holder Name *","accountName","text"],["Phone *","phone","tel"],["Transaction ID","transactionId","text"]] as [string,keyof FormData,string][]).map(([label,key,type])=>(
+                {([["Student Name *","name","text"],["Account Holder Name *","accountName","text"],["Phone *","phone","tel"],["Transaction ID (Optional)","transactionId","text"]] as [string,keyof FormData,string][]).map(([label,key,type])=>(
                   <div key={key}>
                     <Label style={{fontSize:9,letterSpacing:"0.28em",color:C.bronze,textTransform:"uppercase"}}>{label}</Label>
                     <Input type={type} value={form[key]} onChange={e=>setForm(f=>({...f,[key]:e.target.value}))} style={{marginTop:3,height:36,background:C.sandLight,border:`1px solid ${C.maroon}22`,borderRadius:2,color:C.deep,fontSize:13}}/>
@@ -1177,6 +1178,11 @@ export default function App() {
           <span style={{fontSize:9,letterSpacing:"0.4em",color:`${C.maroon}55`,textTransform:"uppercase",fontFamily:"'DM Serif Display',serif"}}>Anandamayi  Kuchipudi</span>
           <KuchipudiIcon size={18} color={C.maroon}/>
         </div>
+        <p style={{marginBottom:8}}>
+          <a href="/privacy-policy" style={{fontSize:12,color:C.maroon,textDecoration:"none",fontWeight:700}}>
+            Privacy Policy
+          </a>
+        </p>
         <p style={{fontSize:10,color:`${C.maroon}40`}}>� {new Date().getFullYear()} Anandamayi Nrityalaya  All rights reserved</p>
       </footer>
     </div>
