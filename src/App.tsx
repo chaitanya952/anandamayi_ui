@@ -15,6 +15,12 @@ import {
   Flower2, BookOpen, Heart, MessageCircle, Loader2, Sparkles
 } from "lucide-react";
 
+declare global {
+  interface Window {
+    Razorpay?: new (options: Record<string, unknown>) => { open: () => void };
+  }
+}
+
 // -- Color Palette (extracted from your logo) ----------------------------------
 const C = {
   parchment:   "#F2D9B8",   // warm sandy background
@@ -255,6 +261,27 @@ function buildUpiPaymentLink({
   return `upi://pay?${params.toString()}`;
 }
 
+async function loadRazorpayCheckoutScript() {
+  if (window.Razorpay) return true;
+
+  return new Promise<boolean>((resolve) => {
+    const existing = document.querySelector('script[data-razorpay-checkout="true"]') as HTMLScriptElement | null;
+    if (existing) {
+      existing.addEventListener("load", () => resolve(Boolean(window.Razorpay)), { once: true });
+      existing.addEventListener("error", () => resolve(false), { once: true });
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.dataset.razorpayCheckout = "true";
+    script.onload = () => resolve(Boolean(window.Razorpay));
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
+
 function titleCase(value: string) {
   return value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
 }
@@ -454,11 +481,7 @@ function BatchCard({b,selected,onSelect}:{b:Batch;selected:boolean;onSelect:(x:B
           </div>
         </div>
         <div style={{display:"flex",alignItems:"end",justifyContent:"space-between",gap:10}}>
-          <div style={{display:"flex",alignItems:"baseline",gap:2}}>
-            <span style={{fontFamily:"'DM Serif Display',serif",fontSize:13,color:C.maroon}}>?</span>
-            <span style={{fontFamily:"'DM Serif Display',serif",fontSize:34,fontWeight:700,color:C.maroon,lineHeight:1}}>{b.fee.toLocaleString()}</span>
-            <span style={{fontSize:10,color:C.bronzeLight}}>/course</span>
-          </div>
+          <div style={{fontSize:11,color:C.bronzeLight,letterSpacing:"0.12em",textTransform:"uppercase"}}>Admission Open</div>
           {selected&&<div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:C.maroon,background:`${C.maroon}08`,padding:"6px 8px",borderRadius:999}}><CheckCircle2 size={12}/>Selected</div>}
         </div>
       </CardContent>
@@ -469,7 +492,6 @@ function BatchCard({b,selected,onSelect}:{b:Batch;selected:boolean;onSelect:(x:B
 // -- Batches Page --------------------------------------------------------------
 function BatchesSection({onRegister,batches}:{onRegister:(b:Batch)=>void;batches:Batch[]}) {
   const [sel,setSel]=useState<Batch|null>(null);
-  const lowestFee = batches.length ? Math.min(...batches.map((b)=>b.fee || 0)) : 0;
   return (
     <section style={{paddingTop:108,paddingBottom:80,padding:"108px 1rem 80px",background:`linear-gradient(180deg,${C.sandLight},${C.cream})`,minHeight:"100vh"}}>
       <div style={{maxWidth:1100,margin:"0 auto"}}>
@@ -488,7 +510,7 @@ function BatchesSection({onRegister,batches}:{onRegister:(b:Batch)=>void;batches
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:12,marginBottom:28}}>
           {[
             {label:"Live Batches", value:String(batches.length)},
-            {label:"Starting Fee", value:`Rs. ${lowestFee.toLocaleString()}`},
+            {label:"Training", value:"Kuchipudi"},
             {label:"Modes", value:Array.from(new Set(batches.map((b)=>b.mode))).length.toString()},
           ].map((item)=>(
             <div key={item.label} style={{background:`linear-gradient(135deg, ${C.white}, ${C.parchment})`,border:`1px solid ${C.maroon}16`,borderRadius:10,padding:"14px 16px",boxShadow:`0 8px 20px ${C.maroon}08`}}>
@@ -555,9 +577,9 @@ function ChatBot({
   const handleBatchSelect = useCallback((b:Batch)=>{
     setError("");
     setBatch(b);setForm(f=>({...f,batch:b.name}));
-    add(`${b.teluguName} ${b.name} (?${b.fee.toLocaleString()})`, "user");
+    add(`${b.teluguName} ${b.name}`, "user");
     setTimeout(()=>{
-      add(`${b.name} / ${b.teluguName} ???????:\n\n?? Schedule: ${b.schedule}\n?? Fee: ?${b.fee.toLocaleString()}\n?? Mode: ${b.mode}`);
+      add(`${b.name} / ${b.teluguName} ???????:\n\n?? Schedule: ${b.schedule}\n?? Mode: ${b.mode}`);
       setTimeout(()=>{add(" Please review our guidelines:","bot","guidelines");setStep("guidelines");},900);
     },600);
   }, [add]);
@@ -649,7 +671,6 @@ function ChatBot({
                             <div>
                               <p style={{fontFamily:"'DM Serif Display',serif",fontSize:11,color:C.deep,lineHeight:1.2}}>{b.name}</p>
                 <p style={{fontSize:10,color:C.maroonLight}}>{b.mode} - {b.schedule}</p>
-                              <p style={{fontSize:11,color:C.maroon,fontWeight:600,fontFamily:"'DM Serif Display',serif"}}>?{b.fee.toLocaleString()}</p>
                             </div>
                           </button>
                         ))}
@@ -691,8 +712,8 @@ function ChatBot({
                         ))}
                         <div>
                           <Label style={{fontSize:9,letterSpacing:"0.28em",color:C.bronze,textTransform:"uppercase"}}>Batch</Label>
-                          <div style={{marginTop:3,padding:"8px 12px",background:`${C.maroon}07`,border:`1px solid ${C.maroon}1e`,borderRadius:2,fontFamily:"'DM Serif Display',serif",color:C.maroon,fontSize:13,display:"flex",justifyContent:"space-between"}}>
-                            <span>{batch?.name}</span><span style={{fontWeight:700}}>?{batch?.fee?.toLocaleString()}</span>
+                          <div style={{marginTop:3,padding:"8px 12px",background:`${C.maroon}07`,border:`1px solid ${C.maroon}1e`,borderRadius:2,fontFamily:"'DM Serif Display',serif",color:C.maroon,fontSize:13}}>
+                            <span>{batch?.name}</span>
                           </div>
                         </div>
                         <Button onClick={handleFormSubmit} disabled={loading} style={{height:38,background:`linear-gradient(135deg,${C.maroon},${C.maroonMid})`,color:C.cream,border:"none",borderRadius:2,fontFamily:"'DM Serif Display',serif",letterSpacing:"0.1em",fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
@@ -805,7 +826,6 @@ function RegisterSection({
                     {b.danceIcon}
                     <span style={{fontFamily:"'DM Serif Display',serif",fontSize:12,color:C.deep}}>{b.name}</span>
                   </div>
-                  <p style={{fontSize:11,color:C.maroon}}>?{b.fee.toLocaleString()}</p>
                 </button>
               );})}
             </CardContent>
@@ -837,7 +857,7 @@ function RegisterSection({
                 <Input value={form.phone} onChange={e=>setForm(f=>({...f,phone:e.target.value}))} style={{marginTop:3,height:36,background:C.sandLight,border:`1px solid ${C.maroon}22`,borderRadius:2}}/>
               </div>
               <div style={{padding:"10px 12px",background:`${C.maroon}07`,border:`1px solid ${C.maroon}1e`,borderRadius:2,fontSize:13,color:C.maroon}}>
-                {selectedBatch ? `${selectedBatch.name} ${selectedBatch.fee.toLocaleString()}` : "Select a batch to continue"}
+                {selectedBatch ? selectedBatch.name : "Select a batch to continue"}
               </div>
               <Button onClick={submit} disabled={loading} style={{height:40,background:`linear-gradient(135deg,${C.maroon},${C.maroonMid})`,color:C.cream,border:"none",borderRadius:2,fontFamily:"'DM Serif Display',serif",letterSpacing:"0.12em",fontSize:13}}>
                 {loading?<Loader2 size={14} style={{animation:"spin 1s linear infinite"}}/>:<FileText size={14} style={{marginRight:6}}/>}
@@ -946,6 +966,84 @@ function PaymentSection({ initialSession, batches }:{ initialSession:StudentSess
     setSubmitted(true);
   };
 
+  const handleRazorpayPayment = async() => {
+    if(!sel||!form.name||!form.phone){
+      alert("Please select a batch and fill the required student details first.");
+      return;
+    }
+
+    setError("");
+    setLoading(true);
+
+    const orderResponse = await apiPost("payment/razorpay/order", {
+      studentId: initialSession?.studentId,
+      studentName: form.name,
+      phone: form.phone,
+      email: form.email,
+      amount: payableAmount || sel.fee,
+      batch_name: sel.name,
+    });
+
+    if (!orderResponse.ok) {
+      setLoading(false);
+      setError(orderResponse.error || "Unable to start Razorpay payment.");
+      return;
+    }
+
+    const scriptLoaded = await loadRazorpayCheckoutScript();
+    if (!scriptLoaded || !window.Razorpay) {
+      setLoading(false);
+      setError("Unable to load Razorpay checkout.");
+      return;
+    }
+
+    const options = {
+      key: orderResponse.keyId,
+      amount: orderResponse.order?.amount,
+      currency: orderResponse.order?.currency || "INR",
+      name: "Anandamayi Nrityalaya",
+      description: `${sel.name} Admission`,
+      order_id: orderResponse.order?.id,
+      prefill: {
+        name: form.name,
+        email: form.email,
+        contact: form.phone,
+      },
+      notes: {
+        batch_name: sel.name,
+      },
+      theme: {
+        color: C.maroon,
+      },
+      handler: async (response: Record<string, string>) => {
+        const verifyResponse = await apiPost("payment/razorpay/verify", {
+          ...response,
+          studentId: initialSession?.studentId,
+          phone: form.phone,
+          amount: payableAmount || sel.fee,
+          batch_name: sel.name,
+        });
+
+        setLoading(false);
+        if (!verifyResponse.ok) {
+          setError(verifyResponse.error || "Razorpay payment verification failed.");
+          return;
+        }
+
+        setError("");
+        setSubmitted(true);
+      },
+      modal: {
+        ondismiss: () => {
+          setLoading(false);
+        },
+      },
+    };
+
+    const checkout = new window.Razorpay(options);
+    checkout.open();
+  };
+
   const upiId = activeQr?.upi_id || "anandamayi@upi";
   const payableAmount = Number(activeQr?.amount || sel?.fee || 0);
   const upiPaymentLink = sel
@@ -963,7 +1061,7 @@ function PaymentSection({ initialSession, batches }:{ initialSession:StudentSess
         <OrnamentDivider/>
         <p style={{color:C.bronze,lineHeight:1.9,marginBottom:32,fontSize:14,fontFamily:"'Manrope','Segoe UI',sans-serif"}}>
           Thank you, <strong style={{color:C.deep}}>{form.name}</strong>!<br/>
-          Rs. <strong style={{color:C.maroon}}>{sel?.fee?.toLocaleString()}</strong> for <strong style={{color:C.deep}}>{sel?.name}</strong> has been recorded.
+          Your payment for <strong style={{color:C.deep}}>{sel?.name}</strong> has been recorded.
         </p>
         <Button onClick={()=>{setSubmitted(false);setSel(null);setForm({name:"",accountName:"",phone:"",email:"",batch:"",transactionId:""}); }} style={{background:`linear-gradient(135deg,${C.maroon},${C.maroonMid})`,color:C.cream,border:"none",borderRadius:2,fontFamily:"'DM Serif Display',serif",letterSpacing:"0.12em",fontSize:13,padding:"10px 28px",cursor:"pointer"}}>
           New Payment
@@ -992,7 +1090,6 @@ function PaymentSection({ initialSession, batches }:{ initialSession:StudentSess
               <div>
                 <p style={{fontFamily:"'DM Serif Display',serif",fontSize:12,color:s?C.deep:C.bronze}}>{b.name}</p>
                 <p style={{fontSize:10,color:C.maroonLight}}>{b.mode} - {b.schedule}</p>
-                <p style={{fontFamily:"'DM Serif Display',serif",fontSize:20,fontWeight:700,color:s?C.maroon:C.bronzeLight,lineHeight:1.2}}>Rs. {b.fee.toLocaleString()}</p>
               </div>
               {s&&<CheckCircle2 size={15} style={{color:C.maroon,marginLeft:"auto"}}/>}
             </button>
@@ -1015,13 +1112,19 @@ function PaymentSection({ initialSession, batches }:{ initialSession:StudentSess
                 ))}
                 <div>
                   <Label style={{fontSize:9,letterSpacing:"0.28em",color:C.bronze,textTransform:"uppercase"}}>Batch</Label>
-                  <div style={{marginTop:3,padding:"8px 12px",background:`${C.maroon}07`,border:`1px solid ${C.maroon}1e`,borderRadius:2,fontFamily:"'DM Serif Display',serif",color:C.maroon,fontSize:13,display:"flex",justifyContent:"space-between"}}>
-                    <span>{sel.name}</span><span style={{fontWeight:700}}>Rs. {sel.fee.toLocaleString()}</span>
+                  <div style={{marginTop:3,padding:"8px 12px",background:`${C.maroon}07`,border:`1px solid ${C.maroon}1e`,borderRadius:2,fontFamily:"'DM Serif Display',serif",color:C.maroon,fontSize:13}}>
+                    <span>{sel.name}</span>
                   </div>
                 </div>
                 <Button onClick={handleSubmit} disabled={loading} style={{height:40,background:`linear-gradient(135deg,${C.maroon},${C.maroonMid})`,color:C.cream,border:"none",borderRadius:2,fontFamily:"'DM Serif Display',serif",letterSpacing:"0.12em",fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
                   {loading?<Loader2 size={14} style={{animation:"spin 1s linear infinite"}}/>:<CreditCard size={14}/>}Confirm Payment
                 </Button>
+                <Button onClick={handleRazorpayPayment} disabled={loading} style={{height:40,background:C.white,color:C.maroon,border:`1px solid ${C.maroon}32`,borderRadius:2,fontFamily:"'DM Serif Display',serif",letterSpacing:"0.12em",fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+                  {loading?<Loader2 size={14} style={{animation:"spin 1s linear infinite"}}/>:<CreditCard size={14}/>}Pay With Razorpay
+                </Button>
+                <p style={{fontSize:11,color:C.bronze,lineHeight:1.6}}>
+                  Razorpay payments are auto-verified and saved to the database through secure callbacks. Manual UPI confirmation still needs a transaction ID.
+                </p>
                 {error&&<p style={{fontSize:12,color:C.maroon}}>{error}</p>}
               </CardContent>
             </Card>
@@ -1042,8 +1145,8 @@ function PaymentSection({ initialSession, batches }:{ initialSession:StudentSess
                 <p style={{fontSize:9,letterSpacing:"0.4em",color:C.bronze,textTransform:"uppercase",marginBottom:2}}>UPI ID</p>
                 <p style={{fontFamily:"'DM Serif Display',serif",color:C.maroon,fontSize:14,marginBottom:12}}>{upiId}</p>
                 <div style={{width:"100%",background:`${C.maroon}07`,border:`1px solid ${C.maroon}18`,borderRadius:3,padding:"14px"}}>
-                  <p style={{color:C.bronze,fontSize:11,marginBottom:2}}>Amount</p>
-                  <p style={{fontFamily:"'DM Serif Display',serif",fontSize:42,fontWeight:700,color:C.maroon,lineHeight:1}}>Rs. {payableAmount.toLocaleString()}</p>
+                  <p style={{color:C.bronze,fontSize:11,marginBottom:2}}>Payment</p>
+                  <p style={{fontFamily:"'DM Serif Display',serif",fontSize:24,fontWeight:700,color:C.maroon,lineHeight:1.2}}>Secure checkout ready</p>
                   <p style={{fontSize:12,color:C.maroonLight,marginTop:3}}>{sel.mode} - {sel.schedule}</p>
                 </div>
                 <a href={upiPaymentLink} style={{marginTop:12,width:"100%",textDecoration:"none"}}>
