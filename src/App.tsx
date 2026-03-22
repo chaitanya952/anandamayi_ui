@@ -927,7 +927,7 @@ function PaymentSection({ initialSession, batches }:{ initialSession:StudentSess
   },[initialSession?.studentType, sel]);
 
   const handleSubmit=async()=>{
-    if(!sel||!form.name||!form.phone){alert("Please select a batch and fill required fields.");return;}
+    if(!sel||!form.name||!form.phone||!form.transactionId.trim()){alert("Please select a batch and fill all required fields, including Transaction ID.");return;}
     setError("");
     setLoading(true);
     const response = await apiPost("payment/confirm",{
@@ -1007,7 +1007,7 @@ function PaymentSection({ initialSession, batches }:{ initialSession:StudentSess
                 </CardTitle>
               </CardHeader>
               <CardContent style={{display:"flex",flexDirection:"column",gap:14}}>
-                {([["Student Name *","name","text"],["Account Holder Name *","accountName","text"],["Phone *","phone","tel"],["Transaction ID (Optional)","transactionId","text"]] as [string,keyof FormData,string][]).map(([label,key,type])=>(
+                {([["Student Name *","name","text"],["Account Holder Name *","accountName","text"],["Phone *","phone","tel"],["Transaction ID *","transactionId","text"]] as [string,keyof FormData,string][]).map(([label,key,type])=>(
                   <div key={key}>
                     <Label style={{fontSize:9,letterSpacing:"0.28em",color:C.bronze,textTransform:"uppercase"}}>{label}</Label>
                     <Input type={type} value={form[key]} onChange={e=>setForm(f=>({...f,[key]:e.target.value}))} style={{marginTop:3,height:36,background:C.sandLight,border:`1px solid ${C.maroon}22`,borderRadius:2,color:C.deep,fontSize:13}}/>
