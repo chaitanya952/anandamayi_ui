@@ -90,6 +90,7 @@ function StatusBadge({ status }: { status: string }) {
     waitlisted:  { bg: "#e8eef8", color: "#1a3a8b" },
   };
   const { bg, color } = cfg[s] || { bg: C.gray100, color: C.gray700 };
+
   return (
     <span style={{ padding:"2px 10px", borderRadius:12, fontSize:11, fontWeight:600, background:bg, color, letterSpacing:"0.05em" }}>
       {status}
@@ -1158,6 +1159,11 @@ function SettingsPage() {
     instagramPrivacyPolicyUrl: "",
     instagramFollowupNote: "30th of this month",
   });
+  const [razorpay, setRazorpay] = useState({
+    razorpayKeyId: "",
+    razorpayKeySecret: "",
+    razorpayWebhookSecret: "",
+  });
 
   useEffect(() => {
     apiFetch("/settings")
@@ -1175,6 +1181,11 @@ function SettingsPage() {
           instagramRegistrationFormUrl: data.instagramRegistrationFormUrl || "",
           instagramPrivacyPolicyUrl: data.instagramPrivacyPolicyUrl || "",
           instagramFollowupNote: data.instagramFollowupNote || "30th of this month",
+        });
+        setRazorpay({
+          razorpayKeyId: data.razorpayKeyId || "",
+          razorpayKeySecret: data.razorpayKeySecret || "",
+          razorpayWebhookSecret: data.razorpayWebhookSecret || "",
         });
       })
       .catch(() => {});
@@ -1213,6 +1224,15 @@ function SettingsPage() {
 
   const isSuccess = msg.startsWith("✓");
 
+
+  const handleRazorpaySave = async () => {
+    try {
+      await apiFetch("/admin/settings", { method:"PUT", body:JSON.stringify(razorpay) });
+      setMsg("✓ Razorpay settings saved.");
+    } catch {
+      setMsg("Failed.");
+    }
+  };
   return (
     <div style={{ display:"flex", flexDirection:"column", flex:1, overflow:"hidden" }}>
       <TopBar title="Settings" subtitle="సెట్టింగులు"/>
@@ -1257,6 +1277,18 @@ function SettingsPage() {
               <FormField label="Privacy Policy URL" value={instagram.instagramPrivacyPolicyUrl} onChange={v=>setInstagram(p=>({...p,instagramPrivacyPolicyUrl:v}))}/>
               <FormField label="Follow-up Note" value={instagram.instagramFollowupNote} onChange={v=>setInstagram(p=>({...p,instagramFollowupNote:v}))}/>
               <Button onClick={handleInstagramSave} style={{ width:"100%", height:38, background:`linear-gradient(135deg,${C.maroon},${C.maroonMid})`, color:C.cream, border:"none", borderRadius:3, fontSize:13, cursor:"pointer", marginTop:4 }}>Save Instagram Settings</Button>
+            </CardContent>
+          </Card>
+
+          <Card style={{ background:C.white, border:`1.5px solid ${C.gray200}`, borderRadius:6 }}>
+            <CardHeader style={{ padding:"16px 20px 12px", borderBottom:`1px solid ${C.gray100}` }}>
+              <CardTitle style={{ fontFamily:"'DM Serif Display',serif", fontSize:15, color:C.deep }}>Razorpay Settings</CardTitle>
+            </CardHeader>
+            <CardContent style={{ padding:"20px" }}>
+              <FormField label="Razorpay Key ID" value={razorpay.razorpayKeyId} onChange={v=>setRazorpay(p=>({...p,razorpayKeyId:v}))}/>
+              <FormField label="Razorpay Key Secret" value={razorpay.razorpayKeySecret} onChange={v=>setRazorpay(p=>({...p,razorpayKeySecret:v}))} type="password"/>
+              <FormField label="Razorpay Webhook Secret" value={razorpay.razorpayWebhookSecret} onChange={v=>setRazorpay(p=>({...p,razorpayWebhookSecret:v}))} type="password"/>
+              <Button onClick={handleRazorpaySave} style={{ width:"100%", height:38, background:`linear-gradient(135deg,${C.maroon},${C.maroonMid})`, color:C.cream, border:"none", borderRadius:3, fontSize:13, cursor:"pointer", marginTop:4 }}>Save Razorpay Settings</Button>
             </CardContent>
           </Card>
         </div>
